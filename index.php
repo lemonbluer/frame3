@@ -1,10 +1,13 @@
 <?php
 echo date('Y-m-d H:i:s');
 
-vd($_SERVER,[0,1,'2']);
+vd($_SERVER);
 
 
-
+/**
+ * 打印变量
+ * @return [type] [description]
+ */
 function vd(){
 	echo '<pre>';
 	$vars = func_get_args();
