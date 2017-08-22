@@ -1,14 +1,14 @@
 <?php
 echo date('Y-m-d H:i:s');
 
+vd($_GET);
 vd($_SERVER);
-
 
 /**
  * 打印变量
  * @return [type] [description]
  */
-function vd(){
+function vd() {
 	echo '<pre>';
 	$vars = func_get_args();
 	foreach ($vars as $var) {
