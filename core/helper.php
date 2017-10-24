@@ -19,7 +19,8 @@ function vd() {
 		$log[] = ob_get_contents();
 		ob_end_clean();
 	}
-	highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
+	// highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
+	echo implode("--------------------------------------------\n", $log);
 	exit;
 }
 
@@ -32,4 +33,8 @@ function T($time = 0, $format = 'Y-m-d H:i:s') {
 		$time = time();
 	}
 	return date($format, $time);
+}
+
+function L($data) {
+	echo $data;
 }
