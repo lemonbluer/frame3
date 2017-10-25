@@ -1,9 +1,9 @@
 <?php
-namespace frame;
+namespace frame3\core;
 /**
  *
  */
-class App {
+class app {
 	function __construct() {
 		echo "App initing \n";
 	}
