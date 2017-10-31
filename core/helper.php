@@ -20,7 +20,9 @@ function vd() {
 		ob_end_clean();
 	}
 	// highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
-	echo implode("--------------------------------------------\n", $log);
+	$trace = debug_backtrace()[2];
+	echo $trace['file'] . '(' . $trace['line'] . ")\n";
+	echo implode("--------------------------------------------\n", $log) . "\n";
 	exit;
 }
 

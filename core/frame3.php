@@ -3,47 +3,30 @@ namespace frame3\core;
 /**
  *
  */
-class Frame3 {
-	private static $app;
+class frame3 {
 
-	function __construct() {
-		echo 'Frame3 initiating!';
-
-	}
 	public static function start() {
-
-		/* -------------------------------------------- */
-		/* 接管php异常处理								*/
-		set_exception_handler('\frame3\core\Frame3::exception_handler'); // 异常处理
-		set_error_handler('\frame3\core\Frame3::error_handler', E_ALL); // 错误处理
-		register_shutdown_function('\frame3\core\Frame3::shutdown');
-		/* -------------------------------------------- */
-
-		include CORE_PATH . '/helper.php'; // 加载工具函数文件
-		include CORE_PATH . '/loader.php'; // 加载框架全局默认配置
-		new loader();
-		// 解析路由
-		self::url_pharse();
-		// 解析传递过来的参数
-		self::input_filter();
-		include CORE_PATH . '/frame_global_config.php'; // 加载框架全局默认配置
-
-		/* --------------  应用部分 beg --------------  */
-		self::$app = new app();
-		// 初始化数据库连接
-		self::$app->init_db();
-		// 调用controller
-		self::$app->call_controller();
-		/* --------------  应用部分 end --------------  */
-	}
-	// 解析路由
-	public static function url_pharse() {
-		echo "pharseing url \n";
+		// step1.加载默认配置
+		include CORE_PATH . '/frame_global_config.php';
+		// step2.加载工具函数
+		include CORE_PATH . '/helper.php';
+		// step3.接管php异常处理，错误、exception等
+		self::handler_register();
+		// step4.类自动加载器
+		include CORE_PATH . '/loader.php';
+		(new loader())->init();
+		//step5.启动应用
+		(new app())->start();
 	}
 
-	// 解析传递过来的参数
-	public static function input_filter() {
-		echo "parseing input \n";
+	/**
+	 * 自定义接管
+	 * @return [type] [description]
+	 */
+	public static function handler_register() {
+		set_exception_handler('\frame3\core\frame3::exception_handler'); // 异常处理
+		set_error_handler('\frame3\core\frame3::error_handler', E_ALL); // 错误处理
+		register_shutdown_function('\frame3\core\frame3::shutdown');
 	}
 
 	public static function exception_handler($e) {
@@ -59,6 +42,6 @@ class Frame3 {
 
 	public static function shutdown() {
 		$e = error_get_last();
-		vd(T() . ' shutting down');
+		// vd(T() . ' shutting down');
 	}
 }
