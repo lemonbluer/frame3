@@ -23,10 +23,8 @@ class app {
 		$this->load_app_config();
 		// step3.注册app类加载器(app自有lib)
 		spl_autoload_register(function ($class_name) {
-			$o = $class_name;
 			$class_name = ltrim($class_name, '\\');
-			$file_name = '';
-			$name_space = '';
+			$name_space = $file_name = '';
 			if ($class_name_pos = strrpos($class_name, '\\')) {
 				$name_space = substr($class_name, 0, $class_name_pos);
 				$class_name = substr($class_name, $class_name_pos + 1);
@@ -36,15 +34,25 @@ class app {
 				include $file_name;
 			}
 		});
-		// step3.初始化对应controller
-		$c_name_space = ('frame3\\application\\' . APP_NAME . '\\controller\\' . CONTROLLER_NAME);
-		$c = new $c_name_space;
-		// step4.执行对应方法
-		$f = new \ReflectionMethod($c, FUNCTION_NAME);
-		if ($f->isPublic()) {
-			$f->invoke($c);
-		} else {
-			throw new \ReflectionException();
+		try {
+			// step4.初始化对应controller
+			$c = new \ReflectionClass('frame3\\application\\' . APP_NAME . '\\controller\\' . CONTROLLER_NAME);
+			$c_instance = $c->newInstance();
+			$f = $c->getMethod(FUNCTION_NAME);
+			// step5.执行对应方法
+			if ($f->isPublic()) {
+				$f->invoke($c_instance);
+			}
+		} catch (\ReflectionException $e) {
+			// 控制器不存在
+			if ($e->getCode() == -1) {
+				vd(T() . ' class \'' . CONTROLLER_NAME . '\' not found!');
+			}
+			// 控制器中没有找到对应方法
+			if ($e->getCode() == 0) {
+				vd(T() . ' controller \'' . CONTROLLER_NAME . '\' do not have method \'' . FUNCTION_NAME . '\'!');
+			}
+			vd(T() . ' 捕获异常：' . $e->getMessage(), $e);
 		}
 	}
 

@@ -20,8 +20,8 @@ function vd() {
 		ob_end_clean();
 	}
 	// highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
-	$trace = debug_backtrace()[2];
-	echo $trace['file'] . '(' . $trace['line'] . ")\n";
+	// $trace = debug_backtrace()[2];
+	// echo $trace['file'] . '(' . $trace['line'] . ")\n";
 	echo implode("--------------------------------------------\n", $log) . "\n";
 	exit;
 }
@@ -39,4 +39,17 @@ function T($time = 0, $format = 'Y-m-d H:i:s') {
 
 function L($data) {
 	echo $data;
+}
+
+/**
+ * 输入参数
+ * @param [type] $name          [description]
+ * @param [type] $default_value [description]
+ */
+function I($name, $default_value = '') {
+	if ($name === '') {
+		$par = [];
+		return array_merge($par, $_GET, $_POST);
+	}
+	return isset($_GET[$name]) ? $_GET[$name] : (isset($_POST[$name]) ? $_POST[$name] : $default_value);
 }
