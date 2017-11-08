@@ -22,21 +22,34 @@ class app {
 		// step2.加载app的个性化设置
 		$this->load_app_config();
 		// step3.注册app类加载器(app自有lib)
-		spl_autoload_register(function ($class_name) {
-			$class_name = ltrim($class_name, '\\');
+		spl_autoload_register(function ($class) {
+			$class = ltrim($class, '\\');
 			$name_space = $file_name = '';
-			if ($class_name_pos = strrpos($class_name, '\\')) {
-				$name_space = substr($class_name, 0, $class_name_pos);
-				$class_name = substr($class_name, $class_name_pos + 1);
-				$file_name = str_replace(['frame3\application\\' . APP_NAME, '\\'], [APP_PATH, DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+			if ($class_name_pos = strrpos($class, '\\')) {
+				$name_space = substr($class, 0, $class_name_pos);
+				$class_name = substr($class, $class_name_pos + 1);
+				// app目录内controller\lib\model自动加载
+				if (strrpos($class, '\\lib\\')) {
+					$file_name = str_replace(['frame3\\' . APP_NAME . '\\lib', '\\'], [APP_PATH . '\\lib', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+					if (!is_file($file_name)) {
+						$file_name = str_replace(['frame3\\' . APP_NAME . '\\lib', '\\'], [CORE_PATH . '\\lib', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+					}
+				} elseif (strrpos($class, '\\model\\')) {
+					$file_name = str_replace(['frame3\\' . APP_NAME . '\\model', '\\'], [APP_PATH . '\\model', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+				} else {
+					$file_name = str_replace(['frame3\\' . APP_NAME, '\\'], [APP_PATH, DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . $class_name . '.php';
+				}
 			}
+
 			if (is_file($file_name)) {
 				include $file_name;
+			} else {
+				echo 'app class loader failed : ' . $file_name . '||class:' . $class;
 			}
 		});
 		try {
 			// step4.初始化对应controller
-			$c = new \ReflectionClass('frame3\\application\\' . APP_NAME . '\\controller\\' . CONTROLLER_NAME);
+			$c = new \ReflectionClass('frame3\\' . APP_NAME . '\\' . CONTROLLER_NAME);
 			$c_instance = $c->newInstance();
 			$f = $c->getMethod(FUNCTION_NAME);
 			// step5.执行对应方法

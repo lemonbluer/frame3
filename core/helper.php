@@ -53,3 +53,38 @@ function I($name, $default_value = '') {
 	}
 	return isset($_GET[$name]) ? $_GET[$name] : (isset($_POST[$name]) ? $_POST[$name] : $default_value);
 }
+
+/**
+ * 获取配置文件中的信息
+ * @param  string $v [description]
+ * @return [type]    [description]
+ */
+function config($name = '') {
+	static $__CONFIG;
+	if (!isset($__CONFIG)) {
+		include DEFAULT_CONFIG_FILE; // 加载全局配置文件
+		if (is_file(APP_CONFIG_FILE)) {include APP_CONFIG_FILE;} // 加载app配置文件
+		$__CONFIG = array_merge($default_config, $config);
+	}
+	if ($name === '') {
+		return $__CONFIG;
+	} else {
+		return $__CONFIG[$name] ?? null;
+	}
+}
+
+/**
+ * 数据模型函数
+ * @param  string $name [description]
+ * @return [type]       [description]
+ */
+function m($name = '') {
+	static $model;
+	if (!isset($model[$name])) {
+		$model_file = APP_PATH . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR . $name . '.php';
+		$class_name = '\\frame3\\' . APP_NAME . '\\model\\';
+		$class_name .= (is_file($model_file)) ? $name : 'base';
+		$model[$name] = new $class_name($name);
+	}
+	return $model[$name];
+}

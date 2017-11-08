@@ -1,5 +1,5 @@
 <?php
-namespace frame3\application\app1\controller;
+namespace frame3\app1;
 /**
  *
  */

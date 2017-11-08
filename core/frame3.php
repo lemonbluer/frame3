@@ -7,7 +7,7 @@ class frame3 {
 
 	public static function start() {
 		// step1.加载默认配置
-		include CORE_PATH . '/frame_global_config.php';
+		include CORE_PATH . '/default_config.php';
 		// step2.加载工具函数
 		include CORE_PATH . '/helper.php';
 		// step3.接管php异常处理，错误、exception等
