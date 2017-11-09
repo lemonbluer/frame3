@@ -83,8 +83,45 @@ function m($name = '') {
 	if (!isset($model[$name])) {
 		$model_file = APP_PATH . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR . $name . '.php';
 		$class_name = '\\frame3\\' . APP_NAME . '\\model\\';
+		// 默认使用app\model\base.php做为数据模型
 		$class_name .= (is_file($model_file)) ? $name : 'base';
 		$model[$name] = new $class_name($name);
 	}
-	return $model[$name];
+	return $model[$name]->renew();
+}
+
+// 页面跳转
+function R($url = '', $msg = '', $delay = 0) {
+	if ($delay == 0 && $url != '') {
+		header($url);
+		return;
+	}
+	$resp = '<html><head></head><body><div style="text-align:center;"><h1>__msg__</h1>__jump__</div></body></html>';
+	$jump = ($url == '') ? '' : '<h4>__delay__秒后自动跳转到&nbsp;&nbsp;<a href="__url__">__url__</a></h4><script type="text/javascript">setInterval(function(){location.href=\'__url__\';},(__delay__*1000));</script>';
+	echo str_replace(['__jump__', '__msg__', '__delay__', '__url__'], [$jump, $msg, $delay, $url], $resp);
+	return;
+}
+
+// 调试
+function tuning($log, $resp_type = '') {
+	switch (($resp_type == '') ? config('tunning_out_put_type') : $resp_type) {
+	case 'JSON':
+		return json_encode(['time' => T(), 'log' => $log]);
+		break;
+	case 'HTML':
+		$trace_html = '';
+		if (isset($log['trace'])) {
+			ob_start();
+			var_dump($log['trace']);
+			$trace = ob_get_contents();
+			ob_clean();
+			$trace_html = highlight_string("<?php\n" . $trace, true);
+		}
+		echo '<html><head></head><body><h1>' . $log['msg'] . '</h1><hr>' . $trace_html . '</body></html>';
+		break;
+	case 'RAW';
+	default:
+		vd(T(), $log);
+		break;
+	}
 }

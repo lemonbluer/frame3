@@ -30,18 +30,27 @@ class frame3 {
 	}
 
 	public static function exception_handler($e) {
-		vd(T() . '捕获异常', $e);
+		$exp_code = $e->getCode();
+		if ($exp_code == 33301 && APP_ONLINE) {
+			R('/', '当前页面被外星人拿走了!', 3);
+			return;
+		}
+		// R('', T() . ' <br>捕获异常:' . $e->getMessage(), 0, '<hr>' . highlight_string("<?php\n" . var_export($e->getTrace(), true), true));
+		$msg = '捕获异常:' . $e->getMessage() . "<br>File: " . $e->getFile() . '(' . $e->getLine() . ")";
+		tuning(['msg' => $msg, 'trace' => $e->getTrace()]);
 	}
 
 	// php报错处理
 	public static function error_handler(int $errno, string $errstr, string $errfile, int $errline, array $errcontext) {
 		$e = error_get_last();
-		vd(T() . '出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
+		// vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
+		$msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}({$errline}) ";
+		tuning(['msg' => $msg, 'trace' => $errcontext]);
 		die();
 	}
 
 	public static function shutdown() {
-		$e = error_get_last();
+		// vd(T() . '捕获异常:' . $e->getMessage(), $e->getFile() . '(' . $e->getLine() . ')', $e);
 		// vd(T() . ' shutting down');
 	}
 }

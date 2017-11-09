@@ -6,11 +6,14 @@ namespace frame3\core;
 class model {
 
 	// 数据库配置
-	protected $_db_name;
-	protected $_db_instance;
-	protected $_table_name;
+	protected $_db_name; //数据库名
+	protected $_db_instance; // 当前库连接实例
+	protected $_table_name; // 表名
+
+	protected $_last_sql; //上次执行的sql
 
 	// sql拼接
+	protected $_query_type;
 	protected $_where; // where查询条件
 	protected $_limit; // 设置结果集偏移量和数量
 	protected $_column; //查询的字段
@@ -28,10 +31,13 @@ class model {
 	// 设置数据集偏移量和数量
 	public function limit($num = 1) {
 		if (is_array($num)) {
-			$this->_limit = [$num[0], $num[1]];
-		}
-		if ($num > 0) {
-			$this->_limit = [0, $num];
+			if ((intval($num[0]) <= 0) || (intval($num[1]) <= 0)) {
+				throw new \Exception("limit parameter illegal", 1);
+				return false;
+			}
+			$this->_limit = [intval($num[0]), intval($num[1])];
+		} else if (intval($num) > 0) {
+			$this->_limit = [0, intval($num)];
 		} else {
 			return false;
 		}
@@ -50,6 +56,32 @@ class model {
 	protected function _set_where($where, $op = 'AND') {
 		$this->_where[] = ['op' => $op, 'par' => $where];
 	}
+	protected function _build_where() {
+		if (!isset($this->_where)) {return null;}
+		$where = 'WHERE (1=1) ';
+		$i = 1;
+		$bind = [];
+		foreach ($this->_where as $one) {
+			if (is_array($one['par'])) {
+				$par = []; // 每次where调用
+				array_walk($one['par'], function ($v, $k) use (&$par, &$i, &$bind) {
+					if (is_array($v)) {
+						$op = $v[0] . ' ?';
+						$bind[$i++] = $v[1];
+					} else {
+						$op = '=' . ' ?';
+						$bind[$i++] = $v;
+					}
+					$par[] = " `{$k}` {$op} ";
+				});
+				$where .= "{$one['op']} ( " . implode('AND', $par) . " )";
+				$this->_bind = $bind;
+			} else {
+				$where .= "AND ( {$one['par']} ) ";
+			}
+		}
+		return $where;
+	}
 	// 查询符合查询条件的条数
 	public function count() {
 	}
@@ -66,21 +98,24 @@ class model {
 	// 查一条
 	public function one() {
 		$this->_limit = [0, 1];
-		$sql = $this->_build_sql('SELECT');
-		return $this->query($sql);
+		$this->_query_type = 'SELECT';
+		return $this->query($this->_build_sql());
 	}
 	// 查全部
 	public function all() {
-		$sql = $this->_build_sql('SELECT');
-		return $this->query($sql);
+		$this->_query_type = 'SELECT';
+		return $this->query($this->_build_sql());
 	}
-	// 查看sql
+	// 查看当前sql状态
 	public function sql() {
-		return ['sql' => $this->_build_sql('SELECT'), 'bind' => $this->_bind];
+		$this->_query_type = 'SELECT';
+		return ['sql' => $this->_build_sql(), 'bind' => $this->_bind ?? 'empty'];
 	}
-	protected function _build_sql($query_type) {
+	// 上一次执行的sql
+	public function last_sql() {return $this->last_sql;}
+	protected function _build_sql() {
 		$sql = '';
-		switch ($query_type) {
+		switch ($this->_query_type) {
 		case 'SELECT':
 			// step.1 操作符
 			$sql = 'SELECT ';
@@ -89,39 +124,22 @@ class model {
 			// step.3 表名
 			$sql .= "FROM `$this->_table_name` ";
 			// step.4 查询条件
-			if (isset($this->_where)) {
-				$where = 'WHERE (1=1) ';
-				$i = 1;
-				$bind = [];
-				foreach ($this->_where as $one) {
-					if (is_array($one['par'])) {
-						$par = []; // 每次where调用
-						array_walk($one['par'], function ($v, $k) use (&$par, &$i, &$bind) {
-							if (is_array($v)) {
-								$op = $v[0] . ' ?';
-								$bind[$i++] = $v[1];
-							} else {
-								$op = '=' . ' ?';
-								$bind[$i++] = $v;
-							}
-							$par[] = " `{$k}` {$op} ";
-						});
-						$where .= "{$one['op']} ( " . implode('AND', $par) . " )";
-						$this->_bind = $bind;
-					} else {
-						$where .= "AND ( {$one['par']} ) ";
-					}
-				}
-				$sql .= $where;
-			}
+			$sql .= $this->_build_where() ?? ' ';
 			// step.5 排序
 			if (isset($this->_order_by)) {
 				$sql .= "ORDER BY " . $this->_order_by . ' ';
 			}
 			// step.6 limit
 			if (isset($this->_limit)) {
-				$sql .= "LIMIT {$this->_limit[0]},{$this->_limit[1]} ";
+				$sql .= sprintf('LIMIT %d,%d ', intval($this->_limit[0]), intval($this->_limit[1]));
 			}
+			break;
+		case 'INSERT':
+
+			break;
+		case 'UPDATE':
+			break;
+		case 'DELETE':
 			break;
 		default:
 			# code...
@@ -137,9 +155,22 @@ class model {
 				$sth->bindValue($k, $v);
 			}
 		}
+		$this->_last_sql = ['sql' => $sql, 'bind' => $this->_bind];
 		return $sth->execute() ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
 	}
 	// 执行语句
 	public function exec() {
+	}
+	/**
+	 * 复用当前model，清理查询参数
+	 * @return [type] [description]
+	 */
+	public function renew() {
+		unset($this->_query_type); // 查询类型
+		unset($this->_where); // where查询条件
+		unset($this->_limit); // 设置结果集偏移量和数量
+		unset($this->_column); //查询的字段
+		unset($this->_bind);
+		return $this;
 	}
 }

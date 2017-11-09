@@ -5,8 +5,6 @@ namespace frame3\core;
  * 路由
  */
 class router {
-	function __construct() {
-	}
 
 	/**
 	 * 解析路由，定义常量

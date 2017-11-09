@@ -5,48 +5,17 @@ namespace frame3\core;
  */
 class app {
 
-	public $router;
-
-	function __construct() {
-
-	}
-
 	/**
 	 * 应用启动
 	 * @return [type] [description]
 	 */
 	public function start() {
 		// step1.解析路由
-		$this->router = new router();
-		$this->router->parse();
+		(new router())->parse();
 		// step2.加载app的个性化设置
-		$this->load_app_config();
-		// step3.注册app类加载器(app自有lib)
-		spl_autoload_register(function ($class) {
-			$class = ltrim($class, '\\');
-			$name_space = $file_name = '';
-			if ($class_name_pos = strrpos($class, '\\')) {
-				$name_space = substr($class, 0, $class_name_pos);
-				$class_name = substr($class, $class_name_pos + 1);
-				// app目录内controller\lib\model自动加载
-				if (strrpos($class, '\\lib\\')) {
-					$file_name = str_replace(['frame3\\' . APP_NAME . '\\lib', '\\'], [APP_PATH . '\\lib', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
-					if (!is_file($file_name)) {
-						$file_name = str_replace(['frame3\\' . APP_NAME . '\\lib', '\\'], [CORE_PATH . '\\lib', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
-					}
-				} elseif (strrpos($class, '\\model\\')) {
-					$file_name = str_replace(['frame3\\' . APP_NAME . '\\model', '\\'], [APP_PATH . '\\model', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
-				} else {
-					$file_name = str_replace(['frame3\\' . APP_NAME, '\\'], [APP_PATH, DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . $class_name . '.php';
-				}
-			}
-
-			if (is_file($file_name)) {
-				include $file_name;
-			} else {
-				echo 'app class loader failed : ' . $file_name . '||class:' . $class;
-			}
-		});
+		// $this->load_app_config();
+		// step3.注册app类加载器
+		spl_autoload_register('self::app_auto_loader');
 		try {
 			// step4.初始化对应controller
 			$c = new \ReflectionClass('frame3\\' . APP_NAME . '\\' . CONTROLLER_NAME);
@@ -59,24 +28,15 @@ class app {
 		} catch (\ReflectionException $e) {
 			// 控制器不存在
 			if ($e->getCode() == -1) {
-				vd(T() . ' class \'' . CONTROLLER_NAME . '\' not found!');
+				throw new \Exception("controller not found", 33301);
 			}
 			// 控制器中没有找到对应方法
 			if ($e->getCode() == 0) {
-				vd(T() . ' controller \'' . CONTROLLER_NAME . '\' do not have method \'' . FUNCTION_NAME . '\'!');
+				throw new \Exception('method[' . FUNCTION_NAME . '] not fount in controller[' . CONTROLLER_NAME . ']', 33302);
 			}
+			throw new \Exception("", 1);
 			vd(T() . ' 捕获异常：' . $e->getMessage(), $e);
 		}
-	}
-
-	// 初始化数据库连接
-	public function init_db() {
-		echo "initing db connection \n";
-	}
-
-	// 调用controller
-	public function call_controller() {
-		echo "exec controller \n";
 	}
 
 	// 日志记录
@@ -84,7 +44,35 @@ class app {
 		echo "log someting \n";
 	}
 
-	public function load_app_config($value = '') {
-		# code...
+	/**
+	 * app内自动加载器
+	 * @param  [type] $class [description]
+	 * @return [type]        [description]
+	 */
+	public function app_auto_loader($class) {
+		$class = ltrim($class, '\\');
+		$name_space = $file_name = '';
+		if ($class_name_pos = strrpos($class, '\\')) {
+			$name_space = substr($class, 0, $class_name_pos);
+			$class_name = substr($class, $class_name_pos + 1);
+			if (strrpos($class, '\\lib\\')) {
+				// app目录内lib自动加载
+				$file_name = str_replace(['frame3\\' . APP_NAME . '\\lib', '\\'], [APP_PATH . '\\lib', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+				if (!is_file($file_name)) {
+					$file_name = str_replace(['frame3\\' . APP_NAME . '\\lib', '\\'], [CORE_PATH . '\\lib', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+				}
+			} elseif (strrpos($class, '\\model\\')) {
+				// app内controller\lib\model自动加载
+				$file_name = str_replace(['frame3\\' . APP_NAME . '\\model', '\\'], [APP_PATH . '\\model', DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
+			} else {
+				// app目录内controller自动加载
+				$file_name = str_replace(['frame3\\' . APP_NAME, '\\'], [APP_PATH, DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . 'controller' . DIRECTORY_SEPARATOR . $class_name . '.php';
+			}
+		}
+		if (is_file($file_name)) {
+			include $file_name;
+		} else {
+			// echo 'app class loader failed : ' . $file_name . '||class:' . $class;
+		}
 	}
 }

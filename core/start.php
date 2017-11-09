@@ -5,6 +5,7 @@ header('X-Powered-By: frame3');
 // TODO : window linux 适配
 define('OS_TYPE', strtoupper(substr(PHP_OS, 0, 3))); //服务器类型
 define('DEBUG_MODE', true); // debug模式
+define('APP_ONLINE', false);
 define('CORE_PATH', __DIR__); // 框架核心代码路径
 define('DEFAULT_CONFIG_FILE', CORE_PATH . DIRECTORY_SEPARATOR . 'default_config.php'); // 默认配置文件
 
