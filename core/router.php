@@ -54,7 +54,7 @@ class router {
 			$par = array_slice($uri, 4);
 			while ($cur = current($par)) {
 				if (!isset($_GET['' . $cur])) {
-					$_GET['' . $cur] = next($par);
+					$_GET['' . $cur] = urldecode(next($par));
 				} else {
 					next($par);
 				}

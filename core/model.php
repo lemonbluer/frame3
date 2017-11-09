@@ -11,8 +11,10 @@ class model {
 	protected $_table_name;
 
 	// sql拼接
-	protected $_where;
-	protected $_limit;
+	protected $_where; // where查询条件
+	protected $_limit; // 设置结果集偏移量和数量
+	protected $_column; //查询的字段
+	protected $_bind;
 
 	function __construct($model_name = '') {
 		if ($model_name === '') {
@@ -24,19 +26,29 @@ class model {
 	}
 
 	// 设置数据集偏移量和数量
-	public function limit() {
-		echo 'limit';
-	}
-	// 排序
-	public function order() {
-	}
-	// 设置查询条件
-	public function where($where) {
-		$this->_set_where($where);
+	public function limit($num = 1) {
+		if (is_array($num)) {
+			$this->_limit = [$num[0], $num[1]];
+		}
+		if ($num > 0) {
+			$this->_limit = [0, $num];
+		} else {
+			return false;
+		}
 		return $this;
 	}
-	protected function _set_where($where) {
-		$this->_where = $where;
+	// 排序
+	public function order($order_by) {
+		$this->_order_by = $order_by;
+		return $this;
+	}
+	// 设置查询条件
+	public function where($where, $op = 'AND') {
+		$this->_set_where($where, $op);
+		return $this;
+	}
+	protected function _set_where($where, $op = 'AND') {
+		$this->_where[] = ['op' => $op, 'par' => $where];
 	}
 	// 查询符合查询条件的条数
 	public function count() {
@@ -62,13 +74,70 @@ class model {
 		$sql = $this->_build_sql('SELECT');
 		return $this->query($sql);
 	}
+	// 查看sql
+	public function sql() {
+		return ['sql' => $this->_build_sql('SELECT'), 'bind' => $this->_bind];
+	}
 	protected function _build_sql($query_type) {
-		return $query_type . ' * FROM `' . $this->_table_name . '` WHERE ' . $this->_where;
+		$sql = '';
+		switch ($query_type) {
+		case 'SELECT':
+			// step.1 操作符
+			$sql = 'SELECT ';
+			// step.2 列
+			$sql .= isset($this->_column) ? '`' . implode('`,`', $this->_column) . '` ' : '* ';
+			// step.3 表名
+			$sql .= "FROM `$this->_table_name` ";
+			// step.4 查询条件
+			if (isset($this->_where)) {
+				$where = 'WHERE (1=1) ';
+				$i = 1;
+				$bind = [];
+				foreach ($this->_where as $one) {
+					if (is_array($one['par'])) {
+						$par = []; // 每次where调用
+						array_walk($one['par'], function ($v, $k) use (&$par, &$i, &$bind) {
+							if (is_array($v)) {
+								$op = $v[0] . ' ?';
+								$bind[$i++] = $v[1];
+							} else {
+								$op = '=' . ' ?';
+								$bind[$i++] = $v;
+							}
+							$par[] = " `{$k}` {$op} ";
+						});
+						$where .= "{$one['op']} ( " . implode('AND', $par) . " )";
+						$this->_bind = $bind;
+					} else {
+						$where .= "AND ( {$one['par']} ) ";
+					}
+				}
+				$sql .= $where;
+			}
+			// step.5 排序
+			if (isset($this->_order_by)) {
+				$sql .= "ORDER BY " . $this->_order_by . ' ';
+			}
+			// step.6 limit
+			if (isset($this->_limit)) {
+				$sql .= "LIMIT {$this->_limit[0]},{$this->_limit[1]} ";
+			}
+			break;
+		default:
+			# code...
+			break;
+		}
+		return $sql;
 	}
 	// 查询数据
 	public function query($sql) {
-		$sth = $this->_db_instance->query($sql);
-		return $sth ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
+		$sth = $this->_db_instance->prepare($sql);
+		if (isset($this->_bind)) {
+			foreach ($this->_bind as $k => $v) {
+				$sth->bindValue($k, $v);
+			}
+		}
+		return $sth->execute() ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
 	}
 	// 执行语句
 	public function exec() {
