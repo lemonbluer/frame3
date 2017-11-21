@@ -19,6 +19,7 @@ class model {
 	protected $_limit; // 设置结果集偏移量和数量
 	protected $_col; //查询的字段
 	protected $_bind;
+	protected $_values; // insert查询值字段
 	protected $_multi_execute;
 
 	function __construct($model_name = '') {
@@ -127,32 +128,41 @@ class model {
 	public function add($data = []) {
 		if (empty($data) || !is_array($data)) {throw new \Exception("Data set should be array tobe inserted[" . $this->sql() . ']', 33303);return 0;}
 		$i = 1;
+		$col = array(); // 插入的列名
 		foreach ($data as $k => $v) {
-			$col = []; // 插入的列名
-			// 二维数组循环插入
-			if (is_array($v)) {
-				$bind = [];
-				$j = 1;
-				foreach ($v as $kk => $vv) {
-					$col[] = $kk;
-					$bind[$j] = $vv;
-					$j++;
-				}
-				$this->_bind[] = $bind;
-				$this->_multi_execute = TRUE;
-			} else {
-				$col[] = $k;
-				$this->_bind[$i] = $v;
-				$i++;
-			}
+			$col[] = $k;
+			$this->_bind[$i] = $v;
+			$i++;
 		}
 		$this->_col = '`' . implode('`,`', $col) . '` ';
+		$this->_values = '(' . substr(str_repeat('?,', count($col)), 0, -1) . ')';
 		$this->_query_type = 'INSERT';
 		$this->transaction_beg();
-		$result = $this->query();
+		$last_insert_id = $this->query();
 		$this->commit();
-		return $result;
+		return $last_insert_id;
 	}
+	/**
+	 * 批量插库
+	 * @param array $data [description]
+	 */
+	public function add_all($data = []) {
+		$i = 1;
+		array_walk_recursive($data, function ($v, $k) use (&$i) {
+			$this->_bind[$i] = $v;
+			$i++;
+		});
+		$this->_query_type = 'INSERT';
+		$col = array_keys(current($data));
+		$this->_col = '`' . implode('`,`', $col) . '` ';
+		$data_val = '(' . substr(str_repeat('?,', count($col)), 0, -1) . ')';
+		$this->_values = substr(str_repeat($data_val . ',', count($this->_bind)), 0, -1) ;
+		$this->transaction_beg();
+		$last_insert_id = $this->query();
+		$this->commit();
+		return $last_insert_id;
+	}
+
 	// 删
 	public function del() {
 		$this->_query_type = 'DELETE';
@@ -180,7 +190,7 @@ class model {
 	// 查一条
 	public function one() {
 		if (!isset($this->_table_name)) {
-			throw new \Exception("No tablename or column specified in SQL", 33303);
+			throw new \Exception("No tablename specified in SQL", 33303);
 		}
 		$this->_limit = [0, 1];
 		$this->_query_type = 'SELECT';
@@ -188,8 +198,8 @@ class model {
 	}
 	// 查全部
 	public function all() {
-		if (!isset($this->_table_name) || !isset($this->_col)) {
-			throw new \Exception("No tablename or column specified in SQL", 33303);
+		if (!isset($this->_table_name)) {
+			throw new \Exception("No tablename specified in SQL", 33303);
 		}
 		$this->_query_type = 'SELECT';
 		return $this->query();
@@ -235,7 +245,7 @@ class model {
 			// step.3 列
 			$sql .= ($this->_col ? '(' . $this->_col . ') ' : '');
 			// step.4 值
-			$sql .= 'VALUES(' . substr(str_repeat('?,', count($this->_bind)), 0, -1) . ')';
+			$sql .= 'VALUES ' . $this->_values . ' ';
 			break;
 		case 'UPDATE':
 			// step.1 操作符
@@ -279,7 +289,7 @@ class model {
 	 */
 	public function query($sql = '') {
 		if ($sql === '') {$sql = $this->_build_sql();}
-		$this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
+		return $this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
 		$sth = $this->_db_instance->prepare($sql);
 		if (isset($this->_bind)) {
 			if (isset($this->_multi_execute) && $this->_multi_execute) {
@@ -290,7 +300,9 @@ class model {
 					$result[] = $sth->execute();
 				}
 			} else {
-				$sth->bindValue($k, $v);
+				foreach ($this->_bind as $k => $v) {
+					$sth->bindValue($k, $v);
+				}
 				$result = $sth->execute();
 			}
 		} else {
@@ -301,11 +313,14 @@ class model {
 		//校验是否执行出错
 		$err = $sth->errorInfo();
 		if ($err[0] != '00000' || $err[0] === '01000') {
-			throw new \Exception($err[2], $err()[0]);
+			throw new \Exception($err[2], $err[0]);
 			return null;
 		}
 		/***************************************************************/
 
+		if ($this->_query_type == 'INSERT') {
+			return $result ? $sth->lastInsertId() : 0;
+		}
 		return $result ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
 
 	}
