@@ -156,7 +156,7 @@ class model {
 		$col = array_keys(current($data));
 		$this->_col = '`' . implode('`,`', $col) . '` ';
 		$data_val = '(' . substr(str_repeat('?,', count($col)), 0, -1) . ')';
-		$this->_values = substr(str_repeat($data_val . ',', count($this->_bind)), 0, -1) ;
+		$this->_values = substr(str_repeat($data_val . ',', count($data)), 0, -1);
 		$this->transaction_beg();
 		$last_insert_id = $this->query();
 		$this->commit();
@@ -289,7 +289,7 @@ class model {
 	 */
 	public function query($sql = '') {
 		if ($sql === '') {$sql = $this->_build_sql();}
-		return $this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
+		$this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
 		$sth = $this->_db_instance->prepare($sql);
 		if (isset($this->_bind)) {
 			if (isset($this->_multi_execute) && $this->_multi_execute) {
@@ -319,7 +319,7 @@ class model {
 		/***************************************************************/
 
 		if ($this->_query_type == 'INSERT') {
-			return $result ? $sth->lastInsertId() : 0;
+			return $result ? $this->_db_instance->lastInsertId() : 0;
 		}
 		return $result ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
 
@@ -354,11 +354,19 @@ class model {
 
 	// 复用当前model，清理查询参数
 	public function renew() {
-		unset($this->_query_type); // 查询类型
+		// unset($this->_query_type); // 查询类型
+		// unset($this->_where); // where查询条件
+		// unset($this->_limit); // 设置结果集偏移量和数量
+		// unset($this->_col); //查询的字段
+		// unset($this->_bind);
+		unset($this->_query_type);
+		unset($this->_set);
 		unset($this->_where); // where查询条件
 		unset($this->_limit); // 设置结果集偏移量和数量
 		unset($this->_col); //查询的字段
 		unset($this->_bind);
+		unset($this->_values); // insert查询值字段
+		unset($this->_multi_execute);
 		return $this;
 	}
 }
