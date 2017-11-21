@@ -1,15 +1,15 @@
 <?php
-$config = [
+return [
 	'database' =>
 	[
 		'qipai_pingtai' =>
 		[
 			'type' => 'mysql',
 			'hostname' => '192.168.1.130',
-			'db_name' => 'qipai_pingtai',
+			'db_name' => 'app1',
 			'user' => 'root',
 			'password' => 'root',
-			'table_prefix' => 's_',
+			'table_prefix' => 'f_',
 		],
 	],
 ];

@@ -28,10 +28,6 @@ class db {
 	 */
 	public static function connect($config = '') {
 		$dsn = sprintf('%s:dbname=%s;host=%s;charset=utf8', $config['type'], $config['db_name'], $config['hostname']);
-		try {
-			return new \PDO($dsn, $config['user'], $config['password']);
-		} catch (PDOException $e) {
-			echo 'Connection failed: ' . $e->getMessage();
-		}
+		return new \PDO($dsn, $config['user'], $config['password']);
 	}
 }

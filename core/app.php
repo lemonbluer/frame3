@@ -13,7 +13,7 @@ class app {
 		// step1.解析路由
 		(new router())->parse();
 		// step2.加载app的个性化设置
-		// $this->load_app_config();
+		config(include APP_CONFIG_FILE);
 		// step3.注册app类加载器
 		spl_autoload_register('self::app_auto_loader');
 		try {
@@ -28,14 +28,13 @@ class app {
 		} catch (\ReflectionException $e) {
 			// 控制器不存在
 			if ($e->getCode() == -1) {
-				throw new \Exception("controller not found", 33301);
-			}
-			// 控制器中没有找到对应方法
-			if ($e->getCode() == 0) {
+				throw new \Exception("controller[" . CONTROLLER_NAME . "] not found in app[" . APP_NAME . "]", 33301);
+			} elseif ($e->getCode() == 0) {
+				// 控制器中没有找到对应方法
 				throw new \Exception('method[' . FUNCTION_NAME . '] not fount in controller[' . CONTROLLER_NAME . ']', 33302);
+			} else {
+				throw new \Exception("Reflection ERROR", 33303);
 			}
-			throw new \Exception("", 1);
-			vd(T() . ' 捕获异常：' . $e->getMessage(), $e);
 		}
 	}
 
@@ -70,6 +69,7 @@ class app {
 			}
 		}
 		if (is_file($file_name)) {
+
 			include $file_name;
 		} else {
 			// echo 'app class loader failed : ' . $file_name . '||class:' . $class;

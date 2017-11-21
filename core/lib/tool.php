@@ -1,5 +1,5 @@
 <?php
-namespace frame3\core;
+namespace frame3\core\lib;
 /**
  *
  */
@@ -9,7 +9,7 @@ class tool {
 		echo "\\frame3\lib $v bark bark bark!";
 	}
 
-	public function bark1($v = 'dog') {
+	public static function bark1($v = 'dog') {
 		echo "\\frame3\lib $v bark bark bark!";
 	}
 }

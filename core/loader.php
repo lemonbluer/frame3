@@ -35,7 +35,6 @@ class loader {
 			$file_name = str_replace(['frame3\core', '\\'], [CORE_PATH, DIRECTORY_SEPARATOR], $name_space) . DIRECTORY_SEPARATOR . $class_name . '.php';
 		}
 		if (is_file($file_name)) {
-			// vd($file_name);
 			include $file_name;
 		}
 	}

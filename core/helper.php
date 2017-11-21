@@ -15,7 +15,7 @@ function vd() {
 		}
 	} else {
 		ob_start();
-		var_dump($v);
+		var_dump($args);
 		$log[] = ob_get_contents();
 		ob_end_clean();
 	}
@@ -60,14 +60,11 @@ function I($name, $default_value = '') {
  * @return [type]    [description]
  */
 function config($name = '') {
-	static $__CONFIG;
-	if (!isset($__CONFIG)) {
-		include DEFAULT_CONFIG_FILE; // 加载全局配置文件
-		if (is_file(APP_CONFIG_FILE)) {include APP_CONFIG_FILE;} // 加载app配置文件
-		$__CONFIG = array_merge($default_config, $config);
-	}
+	static $__CONFIG = array();
 	if ($name === '') {
 		return $__CONFIG;
+	} elseif (is_array($name)) {
+		$__CONFIG = array_merge($__CONFIG, $name);
 	} else {
 		return $__CONFIG[$name] ?? null;
 	}
@@ -102,7 +99,13 @@ function R($url = '', $msg = '', $delay = 0) {
 	return;
 }
 
-// 调试
+//
+/**
+ * 调试
+ * @param  [type] $log       ['msg'=>'信息','trace'=>debug信息]
+ * @param  string $resp_type [description]
+ * @return [type]            [description]
+ */
 function tuning($log, $resp_type = '') {
 	switch (($resp_type == '') ? config('tunning_out_put_type') : $resp_type) {
 	case 'JSON':

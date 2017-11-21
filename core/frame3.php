@@ -6,12 +6,15 @@ namespace frame3\core;
 class frame3 {
 
 	public static function start() {
-		// step1.加载默认配置
-		include CORE_PATH . '/default_config.php';
-		// step2.加载工具函数
-		include CORE_PATH . '/helper.php';
-		// step3.接管php异常处理，错误、exception等
+
+		// step.1 加载工具函数
+		include CORE_PATH . DIRECTORY_SEPARATOR . 'helper.php';
+		// step.2 加载默认配置
+		config(include CORE_PATH . DIRECTORY_SEPARATOR . 'default_config.php');
+		// step.3 接管php异常处理，错误、exception等
 		self::handler_register();
+		// step.4 错误码
+		// global static $__ERR_CODE = 33300;
 		// step4.类自动加载器
 		include CORE_PATH . '/loader.php';
 		(new loader())->init();
@@ -31,20 +34,29 @@ class frame3 {
 
 	public static function exception_handler($e) {
 		$exp_code = $e->getCode();
-		if ($exp_code == 33301 && APP_ONLINE) {
-			R('/', '当前页面被外星人拿走了!', 3);
+		if (APP_ONLINE) {
+			switch ($exp_code) {
+			case 33301:
+				R('/', '当前页面被外星人拿走了!', 2);
+				break;
+			default:
+				R('/', '当前页面被外星人拿走了!', 2);
+				break;
+			}
 			return;
+		} else {
+			if (DEBUG_MODE) {
+				$msg = '捕获异常:' . $e->getMessage() . "<br>File: " . $e->getFile() . '(' . $e->getLine() . ")";
+				tuning(['msg' => $msg, 'trace' => $e->getTrace()]);
+			}
 		}
-		// R('', T() . ' <br>捕获异常:' . $e->getMessage(), 0, '<hr>' . highlight_string("<?php\n" . var_export($e->getTrace(), true), true));
-		$msg = '捕获异常:' . $e->getMessage() . "<br>File: " . $e->getFile() . '(' . $e->getLine() . ")";
-		tuning(['msg' => $msg, 'trace' => $e->getTrace()]);
 	}
 
 	// php报错处理
 	public static function error_handler(int $errno, string $errstr, string $errfile, int $errline, array $errcontext) {
 		$e = error_get_last();
 		// vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
-		$msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}({$errline}) ";
+		$msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}:{$errline} ";
 		tuning(['msg' => $msg, 'trace' => $errcontext]);
 		die();
 	}
