@@ -44,6 +44,7 @@ class model {
 		}
 		return $this;
 	}
+
 	// 排序
 	public function order($order_by) {
 		$this->_order_by = $order_by;
@@ -52,7 +53,7 @@ class model {
 
 	/**
 	 * 设置查询条件
-	 * @param  mix  $where    	一组where条件,字符串或者['列名'=>]
+	 * @param  mixed  $where    一组where条件,字符串或者['列名'=>]
 	 * @param  string $op       连接该组where条件的 AND或OR
 	 * @param  string $inner_op 括号内运算符 连接组内各计算的AND或OR
 	 * @return $this
@@ -64,6 +65,8 @@ class model {
 	protected function _set_where($where, $op = 'AND', $inner_op = 'AND') {
 		$this->_where[] = ['op' => $op, 'inner_op' => $inner_op, 'par' => $where];
 	}
+
+
 	/**
 	 * 构建where查询条件
 	 * @return [type] [description]
@@ -93,14 +96,15 @@ class model {
 					$par[] = " `{$k}` {$op} {$value} ";
 					$i++;
 				}
-				$where .= "{$one['op']} ( " . implode($one['inner_op'], $par) . " )";
+				$where .= " {$one['op']} ( " . implode($one['inner_op'], $par) . " )";
 				$this->_bind = $bind;
 			} else {
-				$where .= "{$op} ( {$one['par']} ) ";
+				$where .= " {$op} ( {$one['par']} ) ";
 			}
 		}
 		return $where;
 	}
+
 	// 查询符合查询条件的条数
 	public function count() {
 		$this->_query_type = 'SELECT';
@@ -142,10 +146,8 @@ class model {
 		$this->commit();
 		return $last_insert_id;
 	}
-	/**
-	 * 批量插库
-	 * @param array $data [description]
-	 */
+
+	// 批量插库
 	public function add_all($data = []) {
 		$i = 1;
 		array_walk_recursive($data, function ($v, $k) use (&$i) {
@@ -168,6 +170,7 @@ class model {
 		$this->_query_type = 'DELETE';
 		return $this->exec();
 	}
+
 	// 改
 	public function update($row_data = null) {
 		if (null === $row_data) {
@@ -187,6 +190,7 @@ class model {
 		}
 		return $this->exec();
 	}
+
 	// 查一条
 	public function one() {
 		if (!isset($this->_table_name)) {
@@ -196,6 +200,7 @@ class model {
 		$this->_query_type = 'SELECT';
 		return $this->query();
 	}
+
 	// 查全部
 	public function all() {
 		if (!isset($this->_table_name)) {
@@ -204,11 +209,13 @@ class model {
 		$this->_query_type = 'SELECT';
 		return $this->query();
 	}
+
 	// 查看当前sql状态
 	public function sql() {
 		$this->_query_type = 'SELECT';
 		return ['sql' => $this->_build_sql(), 'bind' => $this->_bind ?? 'empty'];
 	}
+
 	// 上一次执行的sql
 	public function last_sql() {return $this->_last_sql;}
 
@@ -280,13 +287,8 @@ class model {
 		}
 		return $sql;
 	}
-	// 查询数据
-	/**
-	 * 执行查询
-	 * @param  string $sql           [description]
-	 * @param  bool   $multi_execute sql编译后多次执行(insert all)
-	 * @return [type]                [description]
-	 */
+
+	// 执行查询
 	public function query($sql = '') {
 		if ($sql === '') {$sql = $this->_build_sql();}
 		$this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
@@ -324,6 +326,7 @@ class model {
 		return $result ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
 
 	}
+
 	// 执行语句
 	public function exec($sql = '') {
 		if ($sql === '') {$sql = $this->_build_sql();}
@@ -339,14 +342,23 @@ class model {
 		}
 	}
 
+	// 多次执行
+	public function multi_execute($flag = TRUE) {
+		$this->_multi_execute = $flag;
+		return $this;
+	}
+
+	// 开始事务
 	public function transaction_beg() {
 		$this->_db_instance->beginTransaction();
 		return $this;
 	}
+	// 提交事务
 	public function commit() {
 		$this->_db_instance->commit();
 		return $this;
 	}
+	// 回滚事务
 	public function rollBack() {
 		$this->_db_instance->rollBack();
 		return $this;
@@ -354,17 +366,13 @@ class model {
 
 	// 复用当前model，清理查询参数
 	public function renew() {
-		// unset($this->_query_type); // 查询类型
-		// unset($this->_where); // where查询条件
-		// unset($this->_limit); // 设置结果集偏移量和数量
-		// unset($this->_col); //查询的字段
-		// unset($this->_bind);
+		unset($this->_bind);
+		if (isset($this->_multi_execute) && $this->_multi_execute) {return $this;}
 		unset($this->_query_type);
 		unset($this->_set);
 		unset($this->_where); // where查询条件
 		unset($this->_limit); // 设置结果集偏移量和数量
 		unset($this->_col); //查询的字段
-		unset($this->_bind);
 		unset($this->_values); // insert查询值字段
 		unset($this->_multi_execute);
 		return $this;
