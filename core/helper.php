@@ -89,6 +89,7 @@ function m($name = '') {
 
 // 页面跳转
 function R($url = '', $msg = '', $delay = 0) {
+	// TODO : 死循环页面跳出
 	if ($delay == 0 && $url != '') {
 		header($url);
 		return;
