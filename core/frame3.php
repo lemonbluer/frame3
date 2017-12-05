@@ -34,7 +34,7 @@ class frame3 {
 
 	public static function exception_handler($e) {
 		$exp_code = $e->getCode();
-		if (APP_ONLINE) {
+		if (config('app_online')) {
 			switch ($exp_code) {
 			case 33301:
 				R('/', '当前页面被外星人拿走了!', 2);
@@ -45,7 +45,7 @@ class frame3 {
 			}
 			return;
 		} else {
-			if (DEBUG_MODE) {
+			if (config('debug_mode')) {
 				$msg = '捕获异常:' . $e->getMessage() . "<br>File: " . $e->getFile() . '(' . $e->getLine() . ")";
 				tuning(['msg' => $msg, 'trace' => $e->getTrace()]);
 			}

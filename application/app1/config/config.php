@@ -1,5 +1,8 @@
 <?php
 return [
+	'appname' => 'xueji',
+	'debug_mode' => TRUE, // debug模式
+	'app_online' => FALSE,
 	'database' =>
 	[
 		'qipai_pingtai' =>
@@ -21,11 +24,10 @@ return [
 					'hostname' => '192.168.1.130',
 					'db_name' => 'app1',
 					'user' => 'root',
-					'password' => 'root',
+					'password' => 'root1',
 				],
 			],
 		]
 		,
 	],
-	'appname' => 'xueji',
 ];
