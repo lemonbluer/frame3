@@ -6,8 +6,10 @@ namespace frame3\core;
 class model {
 
 	// 数据库配置
-	protected $_db_name; //数据库名
+	protected $_db_cfg_name; // 数据配置数组的key,app model中指定
+	protected $_db_cfg; //数据库配置数组
 	protected $_db_instance; // 当前库连接实例
+	protected $_db_name; //数据库名
 	protected $_table_name; // 表名
 
 	protected $_last_sql; //上次执行的sql
@@ -24,9 +26,18 @@ class model {
 
 	function __construct($model_name = '') {
 		if ($model_name !== '') {
-			$this->_table_name = config('database')[$this->_db_name]['table_prefix'] . $model_name;
+			$this->_table_name = config('database')[$this->_db_cfg_name]['table_prefix'] . $model_name;
 		}
-		$this->_db_instance = db::get_instance($this->_db_name);
+	}
+
+	/**
+	 * 获取数据库连接实用例
+	 * @return [type] [description]
+	 */
+	protected function get_db_ins() {
+		// update\delete\insert 均走主库
+		$is_master = ($this->_query_type != 'SELECT');
+		return db::get_instance($this->_db_cfg_name, $is_master);
 	}
 
 	// 设置数据集偏移量和数量
@@ -65,7 +76,6 @@ class model {
 	protected function _set_where($where, $op = 'AND', $inner_op = 'AND') {
 		$this->_where[] = ['op' => $op, 'inner_op' => $inner_op, 'par' => $where];
 	}
-
 
 	/**
 	 * 构建where查询条件
@@ -292,6 +302,8 @@ class model {
 	public function query($sql = '') {
 		if ($sql === '') {$sql = $this->_build_sql();}
 		$this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
+		$this->_db_instance = $this->get_db_ins();
+		// vd($sql);
 		$sth = $this->_db_instance->prepare($sql);
 		if (isset($this->_bind)) {
 			if (isset($this->_multi_execute) && $this->_multi_execute) {
