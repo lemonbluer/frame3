@@ -1,7 +1,7 @@
 <?php
+// 入口文件
 namespace frame3\core;
-
-header('X-Powered-By: frame3');
+// header('X-Powered-By: frame3');
 // TODO : window linux 适配
 define('OS_TYPE', strtoupper(substr(PHP_OS, 0, 3))); //服务器类型
 define('CORE_PATH', __DIR__); // 框架核心代码路径

@@ -6,7 +6,6 @@ namespace frame3\core;
 class frame3 {
 
 	public static function start() {
-
 		// step.1 加载工具函数
 		include CORE_PATH . DIRECTORY_SEPARATOR . 'helper.php';
 		// step.2 加载默认配置
@@ -32,6 +31,11 @@ class frame3 {
 		register_shutdown_function('\frame3\core\frame3::shutdown');
 	}
 
+	/**
+	 * 接管异常
+	 * @param  [type] $e [description]
+	 * @return [type]    [description]
+	 */
 	public static function exception_handler($e) {
 		$exp_code = $e->getCode();
 		if (config('app_online')) {
@@ -53,6 +57,15 @@ class frame3 {
 	}
 
 	// php报错处理
+	/**
+	 * 接管报错
+	 * @param  int    $errno      [description]
+	 * @param  string $errstr     [description]
+	 * @param  string $errfile    [description]
+	 * @param  int    $errline    [description]
+	 * @param  array  $errcontext [description]
+	 * @return [type]             [description]
+	 */
 	public static function error_handler(int $errno, string $errstr, string $errfile, int $errline, array $errcontext) {
 		$e = error_get_last();
 		// vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
@@ -61,6 +74,10 @@ class frame3 {
 		die();
 	}
 
+	/**
+	 * exit 之后
+	 * @return [type] [description]
+	 */
 	public static function shutdown() {
 		// vd(T() . '捕获异常:' . $e->getMessage(), $e->getFile() . '(' . $e->getLine() . ')', $e);
 		// vd(T() . ' shutting down');

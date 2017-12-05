@@ -2,7 +2,7 @@
 return [
 	'appname' => 'xueji',
 	'debug_mode' => TRUE, // debug模式
-	'app_online' => FALSE,
+	'app_online' => TRUE,
 	'database' =>
 	[
 		'qipai_pingtai' =>
