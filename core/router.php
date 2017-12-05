@@ -23,8 +23,11 @@ class router {
 			$extension = substr($path, $extension_pos + 1, 5);
 			define('URL_EXTENSTION', $extension);
 			if (strtolower($extension) != 'php') {
-				$static_file_extension_array = ['png', 'jpg', 'js', 'css', 'jpeg'];
-				define('IS_STATIC', in_array(strtolower($extension), $static_file_extension_array));
+				// define('IS_STATIC', in_array(strtolower($extension), config('static_file_extension')));
+				if (in_array(strtolower($extension), config('static_file_extension'))) {
+					// TODO : 设置的静态文件后缀匹配到的请求处理
+					// 已经在nginx中配置直接返回
+				}
 			}
 			$path = substr($path, 0, strrpos($path, '.'));
 		}
