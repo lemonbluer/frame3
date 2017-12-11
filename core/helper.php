@@ -45,13 +45,26 @@ function L($data) {
  * 输入参数
  * @param [type] $name          [description]
  * @param [type] $default_value [description]
+ * @param string $type 			数据类型
  */
-function I($name, $default_value = '') {
+function I($name, $default_value = '', $type = '') {
 	if ($name === '') {
 		$par = [];
 		return array_merge($par, $_GET, $_POST);
 	}
-	return isset($_GET[$name]) ? $_GET[$name] : (isset($_POST[$name]) ? $_POST[$name] : $default_value);
+	$value = isset($_GET[$name]) ? $_GET[$name] : (isset($_POST[$name]) ? $_POST[$name] : $default_value);
+	if ('' !== $type) {
+		switch ($type) {
+		case 'string':
+			$value = '' . $value;
+			break;
+		case 'int':
+			$value = intval($value);
+			break;
+		default:break;
+		}
+	}
+	return $value;
 }
 
 /**
@@ -121,11 +134,26 @@ function tuning($log, $resp_type = '') {
 			ob_clean();
 			$trace_html = highlight_string("<?php\n" . $trace, true);
 		}
-		echo '<html><head></head><body><h1>' . $log['msg'] . '</h1><hr>' . $trace_html . '</body></html>';
+		return '<html><head></head><body><h1>' . $log['msg'] . '</h1><hr>' . $trace_html . '</body></html>';
 		break;
 	case 'RAW';
 	default:
 		vd(T(), $log);
 		break;
+	}
+}
+
+/**
+ * @name 设置session
+ * @param  string $key   [description]
+ * @param  string $value [description]
+ * @return [type]        [description]
+ */
+function session($key = '', $value = '') {
+	if (is_null($value)) {
+		$_SESSION[$key] = NULL;
+		return true;
+	} else {
+		return (isset($_SESSION[$key])) ? $_SESSION[$key] : NULL;
 	}
 }

@@ -70,7 +70,7 @@ class frame3 {
 		$e = error_get_last();
 		// vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
 		$msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}:{$errline} ";
-		tuning(['msg' => $msg, 'trace' => $errcontext]);
+		echo tuning(['msg' => $msg, 'trace' => $errcontext]);
 		die();
 	}
 

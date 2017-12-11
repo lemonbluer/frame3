@@ -43,7 +43,7 @@ class model {
 	// 设置数据集偏移量和数量
 	public function limit($num = 1) {
 		if (is_array($num)) {
-			if ((intval($num[0]) <= 0) || (intval($num[1]) <= 0)) {
+			if ((intval($num[0]) < 0) || (intval($num[1]) <= 0)) {
 				throw new \Exception("limit parameter illegal", 1);
 				return false;
 			}
@@ -106,7 +106,7 @@ class model {
 					$par[] = " `{$k}` {$op} {$value} ";
 					$i++;
 				}
-				$where .= " {$one['op']} ( " . implode($one['inner_op'], $par) . " )";
+				$where .= " {$one['op']} ( " . implode($one['inner_op'], $par) . " ) ";
 				$this->_bind = $bind;
 			} else {
 				$where .= " {$op} ( {$one['par']} ) ";
@@ -209,6 +209,22 @@ class model {
 		$this->_limit = [0, 1];
 		$this->_query_type = 'SELECT';
 		return $this->query();
+	}
+
+	//
+	/**
+	 * @name 分页
+	 * @param  [type] $page          [description]
+	 * @param  [type] $each_page_num [description]
+	 * @return [type]                [description]
+	 */
+	public function page($page_index = 0, $single_page_num = 10) {
+		$start = (intval($page_index) - 1) * $single_page_num;
+		if ($start < 0) {
+			throw new \Exception("Page index should be over 0", 33303);
+		}
+		$this->limit([$start, $single_page_num]);
+		return $this;
 	}
 
 	// 查全部

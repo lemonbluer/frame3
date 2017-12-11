@@ -9,7 +9,9 @@ class base {
 		self::BASE_ERR_CODE + 1 => '参数错误',
 	];
 
-	function __construct() {}
+	function __construct() {
+		session_start();
+	}
 
 	/**
 	 * 返回success
