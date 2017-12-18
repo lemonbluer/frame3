@@ -38,7 +38,7 @@ class app {
 		}
 	}
 
-	// 日志记录
+	// TODO:日志记录
 	public function log() {
 		echo "log someting \n";
 	}
@@ -69,7 +69,6 @@ class app {
 			}
 		}
 		if (is_file($file_name)) {
-
 			include $file_name;
 		} else {
 			// echo 'app class loader failed : ' . $file_name . '||class:' . $class;

@@ -6,4 +6,5 @@ return [
 	'debug_mode' => FLASE, // debug模式
 	'app_online' => TRUE,
 	'static_file_extension' => ['png', 'jpg', 'js', 'css', 'jpeg'],
+	'session_cookie_lifetime' => 259200,
 ];
