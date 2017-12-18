@@ -319,7 +319,7 @@ class model {
     public function query($sql = '') {
         if ($sql === '') {$sql = $this->_build_sql();}
         $this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
-        $this->_db_instance = $this->get_db_ins();
+        $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
         // vd($sql);
         $sth = $this->_db_instance->prepare($sql);
         if (isset($this->_bind)) {
@@ -379,6 +379,7 @@ class model {
 
     // 开始事务
     public function transaction_beg() {
+        $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
         $this->_db_instance->beginTransaction();
         return $this;
     }
