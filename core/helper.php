@@ -1,32 +1,5 @@
 <?php
 /**
- * var_dump变量
- * @param  [type] $var [description]
- * @return [type]      [description]
- */
-function vd() {
-    $args = func_get_args();
-    if (is_array($args)) {
-        foreach ($args as $k => $v) {
-            ob_start();
-            var_dump($v);
-            $log[] = ob_get_contents();
-            ob_end_clean();
-        }
-    } else {
-        ob_start();
-        var_dump($args);
-        $log[] = ob_get_contents();
-        ob_end_clean();
-    }
-    // highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
-    // $trace = debug_backtrace()[2];
-    // echo $trace['file'] . '(' . $trace['line'] . ")\n";
-    echo implode("--------------------------------------------\n", $log) . "\n";
-    exit;
-}
-
-/**
  * 格式化时间
  * @param string $format [description]
  */
@@ -113,36 +86,6 @@ function R($url = '', $msg = '', $delay = 0) {
     return;
 }
 
-//
-/**
- * 调试
- * @param  [type] $log       ['msg'=>'信息','trace'=>debug信息]
- * @param  string $resp_type [description]
- * @return [type]            [description]
- */
-function tuning($log, $resp_type = '') {
-    switch (($resp_type == '') ? config('tunning_out_put_type') : $resp_type) {
-    case 'JSON':
-        return json_encode(['time' => T(), 'log' => $log]);
-        break;
-    case 'HTML':
-        $trace_html = '';
-        if (isset($log['trace'])) {
-            ob_start();
-            var_dump($log['trace']);
-            $trace = ob_get_contents();
-            ob_clean();
-            $trace_html = highlight_string("<?php\n" . $trace, true);
-        }
-        return '<html><head></head><body><h1>' . $log['msg'] . '</h1><hr>' . $trace_html . '</body></html>';
-        break;
-    case 'RAW';
-    default:
-        vd(T(), $log);
-        break;
-    }
-}
-
 /**
  * @name 设置session
  * @param  string $key   [description]
@@ -169,5 +112,59 @@ function session($key = NULL, $value = '') {
     } else {
         $_SESSION[$key] = $value;
         return true;
+    }
+}
+
+/**
+ * var_dump变量
+ * @param  [type] $var [description]
+ * @return [type]      [description]
+ */
+function vd() {
+    $args = func_get_args();
+    ob_start();
+    if (is_array($args)) {
+        foreach ($args as $k => $v) {
+            var_dump($v);
+            echo "\n--------------------------------------------\n";
+        }
+    } else {
+        var_dump($args);
+    }
+    $log = ob_get_clean();
+    // highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
+    // $trace = debug_backtrace()[2];
+    // echo $trace['file'] . '(' . $trace['line'] . ")\n";
+    echo $log . "\n";
+    exit;
+}
+
+/**
+ * 调试
+ * @param  [type] $log       ['msg'=>'信息','trace'=>debug信息]
+ * @param  string $resp_type [description]
+ * @return [type]            [description]
+ */
+function tuning($log, $resp_type = '') {
+    $resp_type = ($resp_type == '') ? config('tunning_out_put_type') : $resp_type;
+    switch ($resp_type) {
+    case 'JSON':
+        return json_encode(['time' => T(), 'log' => $log]);
+        break;
+    case 'HTML':
+        $trace_html = '';
+        if (isset($log['trace'])) {
+            ob_start();
+            var_dump($log['trace']);
+            $trace = ob_get_contents();
+            ob_clean();
+            $trace_html = highlight_string("<?php\n" . $trace, true);
+        }
+        return '<html><head></head><body><h1>' . $log['msg'] . '</h1><hr>' . $trace_html . '</body></html>';
+        break;
+    case 'RAW';
+    default:
+        vd(T(), $log);
+        break;
     }
 }
