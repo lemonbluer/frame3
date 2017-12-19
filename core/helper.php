@@ -135,7 +135,7 @@ function vd() {
     // highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
     // $trace = debug_backtrace()[2];
     // echo $trace['file'] . '(' . $trace['line'] . ")\n";
-    echo $log . "\n";
+    echo "<pre>\n" . $log . "\n";
     exit;
 }
 

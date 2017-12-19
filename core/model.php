@@ -12,6 +12,8 @@ class model {
     protected $_db_name; //数据库名
     protected $_table_name; // 表名
 
+    protected $_transaction_on;
+
     protected $_last_sql; //上次执行的sql
 
     // sql拼接
@@ -36,7 +38,7 @@ class model {
      */
     protected function get_db_ins() {
         // update\delete\insert 均走主库
-        $is_master = ($this->_query_type != 'SELECT');
+        $is_master = (!isset($this->_query_type) || $this->_query_type != 'SELECT');
         return db::get_instance($this->_db_cfg_name, $is_master);
     }
 
@@ -151,9 +153,7 @@ class model {
         $this->_col = '`' . implode('`,`', $col) . '` ';
         $this->_values = '(' . substr(str_repeat('?,', count($col)), 0, -1) . ')';
         $this->_query_type = 'INSERT';
-        $this->transaction_beg();
         $last_insert_id = $this->query();
-        $this->commit();
         return $last_insert_id;
     }
 
@@ -169,9 +169,7 @@ class model {
         $this->_col = '`' . implode('`,`', $col) . '` ';
         $data_val = '(' . substr(str_repeat('?,', count($col)), 0, -1) . ')';
         $this->_values = substr(str_repeat($data_val . ',', count($data)), 0, -1);
-        $this->transaction_beg();
         $last_insert_id = $this->query();
-        $this->commit();
         return $last_insert_id;
     }
 
@@ -379,18 +377,23 @@ class model {
 
     // 开始事务
     public function transaction_beg() {
-        $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
-        $this->_db_instance->beginTransaction();
+        if (!isset($this->_transaction_on) || !$this->_transaction_on) {
+            $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
+            $this->_db_instance->beginTransaction();
+            $this->_transaction_on = TRUE;
+        }
         return $this;
     }
     // 提交事务
     public function commit() {
         $this->_db_instance->commit();
+        $this->_transaction_on = FALSE;
         return $this;
     }
     // 回滚事务
-    public function rollBack() {
+    public function roll_back() {
         $this->_db_instance->rollBack();
+        $this->_transaction_on = FALSE;
         return $this;
     }
 
@@ -405,6 +408,7 @@ class model {
         unset($this->_col); //查询的字段
         unset($this->_values); // insert查询值字段
         unset($this->_multi_execute);
+        unset($this->_transaction_on);
         return $this;
     }
 }
