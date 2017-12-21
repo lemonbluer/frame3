@@ -149,6 +149,7 @@ function tuning($log, $resp_type = '') {
     $resp_type = ($resp_type == '') ? config('tunning_out_put_type') : $resp_type;
     switch ($resp_type) {
     case 'JSON':
+        header('Content-type: application/json');
         return json_encode(['time' => T(), 'log' => $log]);
         break;
     case 'HTML':
