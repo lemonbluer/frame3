@@ -169,3 +169,11 @@ function tuning($log, $resp_type = '') {
         break;
     }
 }
+
+function assign($k, $v) {
+    return \frame3\core\view::instance()->assign($k, $v);
+}
+function v($tpl = '') {
+    echo \frame3\core\view::instance()->fetch($tpl);
+    return;
+}
