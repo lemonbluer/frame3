@@ -10,9 +10,9 @@ class index extends base {
         return;
     }
 
-    public function view() {
-        assign("name", I('name'));
-        v();
+    public function foo() {
+        // assign("name", I('name'));
+        v('index/foo/one/tpl');
         return;
     }
 }
