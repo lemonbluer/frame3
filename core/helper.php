@@ -77,7 +77,7 @@ function m($name = '') {
 function R($url = '', $msg = '', $delay = 0) {
     // TODO : 死循环页面跳出
     if ($delay == 0 && $url != '') {
-        header($url);
+        header('Location:' . $url);
         return;
     }
     $resp = '<html><head></head><body><div style="text-align:center;"><h1>__msg__</h1>__jump__</div></body></html>';
