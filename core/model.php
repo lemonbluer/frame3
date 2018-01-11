@@ -358,6 +358,7 @@ class model {
     public function exec($sql = '') {
         if ($sql === '') {$sql = $this->_build_sql();}
         $this->_last_sql = ['sql' => $sql];
+        $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
         $affected_row_count = $this->_db_instance->exec($sql);
         if (FALSE !== $affected_row_count) {
             $err = $this->_db_instance->errorInfo();
