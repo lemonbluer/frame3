@@ -18,16 +18,19 @@ function L($data) {
  * 输入参数
  * @param [type] $name          [description]
  * @param [type] $default_value [description]
- * @param string $type             数据类型
+ * @param array  $opitions        扩展选项  type:数据类型
  */
-function I($name, $default_value = '', $type = '') {
+function I($name, $default_value = NULL, $opitions = NULL) {
     if ($name === '') {
         $par = [];
         return array_merge($par, $_GET, $_POST);
     }
     $value = isset($_GET[$name]) ? $_GET[$name] : (isset($_POST[$name]) ? $_POST[$name] : $default_value);
-    if ('' !== $type) {
-        switch ($type) {
+    if (isset($opitions['len'])) {
+        $value = mb_substr($value, 0, $opitions['len']);
+    }
+    if (isset($opitions['type'])) {
+        switch ($opitions['type']) {
         case 'string':
             $value = '' . $value;
             break;
@@ -61,7 +64,7 @@ function config($name = '') {
  * @param  string $name [description]
  * @return [type]       [description]
  */
-function m($name = '') {
+function M($name = '') {
     static $model;
     if (!isset($model[$name])) {
         $model_file = APP_PATH . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR . $name . '.php';
@@ -173,7 +176,7 @@ function tuning($log, $resp_type = '') {
 function assign($k, $v) {
     return \frame3\core\view::instance()->assign($k, $v);
 }
-function v($tpl = '') {
+function V($tpl = '') {
     echo \frame3\core\view::instance()->fetch($tpl);
     return;
 }

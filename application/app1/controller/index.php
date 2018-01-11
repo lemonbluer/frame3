@@ -12,7 +12,7 @@ class index extends base {
 
     public function foo() {
         // assign("name", I('name'));
-        v('index/foo/one/tpl');
+        V('index/foo/one/tpl');
         return;
     }
 }
