@@ -111,7 +111,7 @@ class model {
                 $where .= " {$one['op']} ( " . implode($one['inner_op'], $par) . " ) ";
                 $this->_bind = $bind;
             } else {
-                $where .= " {$op} ( {$one['par']} ) ";
+                $where .= " {$one['op']} ( {$one['par']} ) ";
             }
         }
         return $where;
