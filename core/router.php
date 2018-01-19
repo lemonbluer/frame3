@@ -66,6 +66,8 @@ class router {
             throw new \Exception("App[" . APP_NAME . "] not exist", 33300);
         }
         define('APP_CONFIG_FILE', APP_PATH . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+        //运行时缓存文件目录，view编译后模版存放位置
+        define('RUNTIME_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . APP_NAME);
         /******************************************************/
 
         /******************************************************/

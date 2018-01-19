@@ -33,32 +33,33 @@ class view {
             $this->_tpl_name = CONTROLLER_NAME . DIRECTORY_SEPARATOR . $tpl;
         }
         $this->_tpl = APP_PATH . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . $this->_tpl_name . '.html';
-        $this->_tpl_runtime = ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . APP_NAME . DIRECTORY_SEPARATOR . $this->_tpl_name . '.html';
+        $this->_tpl_runtime = RUNTIME_PATH . DIRECTORY_SEPARATOR . $this->_tpl_name . '.html';
         /******************************************************/
 
         /******************************************************/
-        // step2.检查缓存 && 编译模版 && 更新缓存
-        if (!$this->check_view_cache()) {
-            if (!$this->compile()) {return FALSE;}
-        }
+        // step3.检查缓存 && 编译模版 && 更新缓存
+        if ($this->compile() === FALSE) {return FALSE;}
         /******************************************************/
 
         /******************************************************/
-        // step3.展开assign变量
+        // step4.展开assign变量
         isset($this->_assign) && extract($this->_assign);
         /******************************************************/
 
         /******************************************************/
-        // step4.输出模版
+        // step5.输出模版
         ob_start();
         include $this->_tpl_runtime;
-        $resp = ob_get_clean();
-        $view_bed = config('view_bed');
-        if (!is_null($view_bed)) {
-            $bed_content = $this->compile($view_bed);
-            $resp = str_replace('__CONTENT__', $resp, $bed_content);
+        if (!is_null(config('view_bed'))) {
+            $bed_content = ob_get_contents();
+            ob_clean();
+            // $code = ''; //未include的php拼接源码
+            $this->compile(config('view_bed'));
+            include RUNTIME_PATH . DIRECTORY_SEPARATOR . config('view_bed') . '.html';
+            $bed = ob_get_clean();
+            return str_replace('__CONTENT__', $bed_content, $bed);
         }
-        return $resp;
+        return ob_get_clean();
         /******************************************************/
     }
 
@@ -92,15 +93,19 @@ class view {
      * @name 缓存是否过期
      * @return bool T:缓存没过期  F:缓存已过期
      */
-    private function check_view_cache() {
+    private function check_view_cache($tpl = '', $tpl_runtime = '') {
+
+        if ($tpl == '') {$tpl = $this->_tpl;}
+        if ($tpl_runtime == '') {$tpl_runtime = $this->_tpl_runtime;}
+
         if (config('debug_mode')) {
             return FALSE;
         }
         // step1.检测时间
-        if (!is_file($this->_tpl_runtime)) {
+        if (!is_file($tpl_runtime)) {
             return FALSE;
         }
-        return (filemtime($this->_tpl_runtime) >= filemtime($this->_tpl));
+        return (filemtime($tpl_runtime) >= filemtime($tpl));
     }
 
     /**
@@ -111,6 +116,7 @@ class view {
     private function compile($tpl_name = '') {
         $tpl = ($tpl_name == '') ? $this->_tpl : APP_PATH . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR . $tpl_name . '.html';
         $tpl_runtime = ($tpl_name == '') ? $this->_tpl_runtime : ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . APP_NAME . DIRECTORY_SEPARATOR . $tpl_name . '.html';
+
         if (!is_file($tpl)) {
             throw new \Exception("tpl file not found at $tpl", 1);
             return FALSE;
@@ -124,6 +130,12 @@ class view {
                 $this->compile($v);
             }
         }
+
+        // cache check
+        if ($this->check_view_cache($tpl, $tpl_runtime)) {
+            return file_get_contents($tpl_runtime);
+        }
+
         $content = preg_replace(
             [
                 '/{\$([\w\[\]\'"\$]+)}/s', // echo
@@ -134,19 +146,22 @@ class view {
             ],
             [
                 '<?php echo $\\1;?>',
-                '<?php foreach( \\1 ){ ?>',
+                '<?php $i=0;foreach( \\1 ){ ?>',
                 '<?php if( \\1 ){ ?>',
                 '<?php }elseif( \\1 ){ ?>',
                 '<?php include(\'' . ROOT_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . APP_NAME . DIRECTORY_SEPARATOR . '\\1' . '.html\');?>',
             ], $content);
-        $content = str_replace(['</if>', '<else />', '</each>'], ['<?php } ?>', '<?php }else{ ?>', '<?php } ?>'], $content);
+        $content = str_replace(['</if>', '<else />', '</each>'], ['<?php } ?>', '<?php }else{ ?>', '<?php $i++;} ?>'], $content);
         $dir = dirname($tpl_runtime);
-        if (is_dir($dir) || @mkdir($dir, 0644, TRUE)) {
+        if (is_dir($dir)) {
             $flag = file_put_contents($tpl_runtime, $content, LOCK_EX);
-        } else {
-            throw new \Exception("runtime directory created failed", 1);
-            return FALSE;
+            return $content;
         }
-        return $content;
+        if (@mkdir($dir, 0755, TRUE)) {
+            $flag = file_put_contents($tpl_runtime, $content, LOCK_EX);
+            return $content;
+        }
+        throw new \Exception("runtime directory created failed", 1);
+        return FALSE;
     }
 }
