@@ -7,7 +7,7 @@ return [
     'view_bed' => 'bed',
     'database' =>
     [
-        'qipai_pingtai' =>
+        'demo' =>
         [
             'rw_seperate' => FALSE, // 读写分离模式（主从模式），只支持一主多从
             'table_prefix' => 'f_',
@@ -16,7 +16,7 @@ return [
                     'is_master' => TRUE,
                     'type' => 'mysql',
                     'hostname' => '192.168.1.130',
-                    'db_name' => 'app1',
+                    'db_name' => 'demo',
                     'user' => 'root',
                     'password' => 'root',
                 ],
@@ -24,7 +24,7 @@ return [
                     'is_master' => FALSE,
                     'type' => 'mysql',
                     'hostname' => '192.168.1.130',
-                    'db_name' => 'app1',
+                    'db_name' => 'demo',
                     'user' => 'root',
                     'password' => 'root',
                 ],

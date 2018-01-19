@@ -1,7 +1,7 @@
 <?php
-namespace frame3\app1;
+namespace frame3\demo;
 /**
- *    默认controller
+ *    @name 首页
  */
 class index extends base {
     // uri: /index/index  or /

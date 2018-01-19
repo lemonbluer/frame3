@@ -2,7 +2,7 @@
 return [
     'frame_name' => 'frame3',
     'tunning_out_put_type' => 'HTML',
-    'default_app_name' => 'app1',
+    'default_app_name' => 'demo',
     'view_bed' => NULL,
     'debug_mode' => FALSE, // debug模式
     'app_online' => TRUE,
