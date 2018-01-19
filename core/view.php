@@ -124,7 +124,7 @@ class view {
         $content = file_get_contents($tpl);
         // include引用文件递归处理
         $matches = array();
-        preg_match_all('/<include\s+[\'"](.+?)[\'"]\s*>/', $content, $matches);
+        preg_match_all('/<include\s+[\'"](.+?)[\'"]\s*\/>/', $content, $matches);
         if (!empty($matches)) {
             foreach ($matches[1] as $k => $v) {
                 $this->compile($v);
@@ -142,7 +142,7 @@ class view {
                 '/<each\s+[\'"](.+?)[\'"]\s*>/', // foreach
                 '/<if\s*[\'"](.+?)[\'"]\s*>/', // if
                 '/<elseif\s*[\'"](.+?)[\'"]\s*>/', // elseif
-                '/<include\s+[\'"](.+?)[\'"]\s*>/', // include
+                '/<include\s+[\'"](.+?)[\'"]\s*\/>/', // include
             ],
             [
                 '<?php echo $\\1;?>',

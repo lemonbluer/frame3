@@ -1,3 +1,8 @@
 sftp-config.json
 /runtime/*
 /vendor/*
+!/public/static
+/public/static/*
+!/public/static/img
+!/public/static/css
+!/public/static/js
