@@ -93,16 +93,17 @@ function R($url = '', $msg = '', $delay = 0) {
  * @name 设置session
  * @param  string $key
  * @param  string $value   ＝NULL为删除
- * @param  array  $config  配置
+ * @param  array  $options  配置
  * @return [type]         [description]
  */
-function session($key = NULL, $value = '', $config = []) {
+function session($key = NULL, $value = '', $options = []) {
     static $is_started = FALSE;
     if (!$is_started) {
-        session_start([
+        if (!isset($options['cookie_lifetime'])) {
             // cookie_lifetime = 0 直到浏览器关闭
-            'cookie_lifetime' => isset($config['cookie_lifetime']) ? $config['cookie_lifetime'] : config('session_cookie_lifetime'),
-        ]);
+            $options['cookie_lifetime'] = config('session_cookie_lifetime') ?? 0;
+        }
+        session_start($options);
         $is_started = TRUE;
     }
     if (is_null($key)) {
