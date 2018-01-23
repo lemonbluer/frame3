@@ -179,7 +179,12 @@ function tuning($log, $resp_type = '') {
 function assign($k, $v) {
     return \frame3\core\view::instance()->assign($k, $v);
 }
-function V($tpl = '') {
-    echo \frame3\core\view::instance()->fetch($tpl);
+/**
+ * @name 获取页面
+ * @param string $tpl     [description]
+ * @param array  $options 'disable_bed'=> bool 不使用view/bed
+ */
+function V($tpl = '', $options = []) {
+    echo \frame3\core\view::instance()->fetch($tpl, $options);
     return;
 }

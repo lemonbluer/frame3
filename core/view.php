@@ -16,9 +16,10 @@ class view {
     /**
      * 获取view
      * @param  string $tpl [description]
+     * @param  array  $options [description]
      * @return [type]      [description]
      */
-    public function fetch($tpl = '') {
+    public function fetch($tpl = '', $options = []) {
         /**
          * TODO: 现在view基础模版bed.html为静态,
          *         还需要增加缓存功能，缓存view和缓存文件对应关系，
@@ -51,6 +52,9 @@ class view {
         ob_start();
         include $this->_tpl_runtime;
         if (!is_null(config('view_bed'))) {
+            if (isset($options['disable_bed']) && $options['disable_bed']) {
+                return ob_get_clean();
+            }
             $bed_content = ob_get_contents();
             ob_clean();
             // $code = ''; //未include的php拼接源码
