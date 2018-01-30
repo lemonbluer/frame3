@@ -18,9 +18,12 @@ class model {
 
     // sql拼接
     protected $_query_type;
+    protected $_distinct;
     protected $_set;
     protected $_where; // where查询条件
     protected $_limit; // 设置结果集偏移量和数量
+    protected $_group; // group by column
+    protected $_having; // having
     protected $_col; //查询的字段
     protected $_bind;
     protected $_values; // insert查询值字段
@@ -40,6 +43,12 @@ class model {
         // update\delete\insert 均走主库
         $is_master = (!isset($this->_query_type) || $this->_query_type != 'SELECT');
         return db::get_instance($this->_db_cfg_name, $is_master);
+    }
+
+    // distinct 开关
+    public function distinct() {
+        $this->_distinct = TRUE;
+        return $this;
     }
 
     // 设置数据集偏移量和数量
@@ -235,6 +244,22 @@ class model {
         return $this->query();
     }
 
+    // 组group by
+    public function group($column = '') {
+        if (is_array($column)) {
+            $this->_group = $column;
+        } else {
+            $this->_group = [$column];
+        }
+        return $this;
+    }
+
+    // group by 条件 having 关键字
+    public function having($condition = '') {
+        $this->_having = $condition;
+        return $this;
+    }
+
     // 查看当前sql状态
     public function sql() {
         $this->_query_type = 'SELECT';
@@ -251,20 +276,30 @@ class model {
         case 'SELECT':
             // step.1 操作符
             $sql = 'SELECT ';
-            // step.2 列
+            // step.2 distinct
+            if (isset($this->_distinct)) {
+                $sql .= 'DISTINCT ';
+            }
+            // step.3 列
             $sql .= ($this->_col ?? '*') . ' ';
-            // step.3 表名
+            // step.4 表名
             $sql .= "FROM `$this->_table_name` ";
-            // step.4 JOIN
-            // step.5 查询条件
+            // step.5 JOIN
+            // step.6 查询条件
             $sql .= $this->_build_where() ?? ' ';
-            // step.6 group by
-            // step.7 union
-            // step.8 排序
+            // step.7 group by
+            if (isset($this->_group)) {
+                $sql .= 'GROUP BY ' . implode(',', $this->_group) . ' ';
+                if (isset($this->_having)) {
+                    $sql .= $this->_having . ' ';
+                }
+            }
+            // step.8 union
+            // step.9 排序
             if (isset($this->_order_by)) {
                 $sql .= "ORDER BY " . $this->_order_by . ' ';
             }
-            // step.9 limit
+            // step.10 limit
             if (isset($this->_limit)) {
                 $sql .= sprintf('LIMIT %d,%d ', intval($this->_limit[0]), intval($this->_limit[1]));
             }
