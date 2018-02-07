@@ -61,7 +61,7 @@ class router {
         // 应用
         define('APP_NAME', (isset($uri[1]) && $uri[1] != '') ? $uri[1] : config('default_app_name'));
         define('APP_URL', '/' . APP_NAME);
-        define('APP_PATH', realpath(CORE_PATH . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR . APP_NAME));
+        define('APP_PATH', realpath(ROOT_PATH . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR . APP_NAME));
         if (!is_dir(APP_PATH)) {
             throw new \Exception("App[" . APP_NAME . "] not exist", 33300);
         }

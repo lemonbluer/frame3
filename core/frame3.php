@@ -9,7 +9,7 @@ class frame3 {
         // step.1 加载工具函数
         include CORE_PATH . DIRECTORY_SEPARATOR . 'helper.php';
         // step.2 加载默认配置
-        config(include CORE_PATH . DIRECTORY_SEPARATOR . 'default_config.php');
+        config(include DEFAULT_CONFIG_FILE);
         // step.3 接管php异常处理，错误、exception等
         self::handler_register();
         // step.4 错误码

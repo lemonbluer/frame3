@@ -153,6 +153,8 @@ function vd() {
  */
 function tuning($log, $resp_type = '') {
     $resp_type = ($resp_type == '') ? config('tunning_out_put_type') : $resp_type;
+    // TODO: 调试日志信息
+    // file_put_contents(ROOT_PATH . DIRECTORY_SEPARATOR . 'a.log', var_export($log) . "\n", FILE_APPEND);
     switch ($resp_type) {
     case 'JSON':
         header('Content-type: application/json');
