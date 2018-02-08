@@ -67,7 +67,7 @@ class frame3 {
      * @return [type]             [description]
      */
     public static function error_handler(int $errno, string $errstr, string $errfile, int $errline, array $errcontext) {
-        $e = error_get_last();
+        // $e = error_get_last();
         // vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
         $msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}:{$errline} ";
         echo tuning(['msg' => $msg, 'trace' => $errcontext]);
@@ -79,7 +79,10 @@ class frame3 {
      * @return [type] [description]
      */
     public static function shutdown() {
-        // vd(T() . '捕获异常:' . $e->getMessage(), $e->getFile() . '(' . $e->getLine() . ')', $e);
+        $e = error_get_last();
+        if (!is_null($e)) {
+            vd(T() . '捕获异常:' . $e->getMessage(), $e->getFile() . '(' . $e->getLine() . ')', $e);
+        }
         // vd(T() . ' shutting down');
     }
 }
