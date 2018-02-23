@@ -353,19 +353,48 @@ class model {
         if ($sql === '') {$sql = $this->_build_sql();}
         $this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
         $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
-        // vd($sql);
         $sth = $this->_db_instance->prepare($sql);
+        if (!$sth) {
+            throw new \Exception("SQL prepare failure. \nsql: [" . $sql . "],\nbind :" . var_export($this->_bind, TRUE), 33303);
+        }
+        // vd($sql, $this->_db_instance, $sth);
         if (isset($this->_bind)) {
             if (isset($this->_multi_execute) && $this->_multi_execute) {
                 foreach ($this->_bind as $k => $v) {
                     foreach ($v as $kk => $vv) {
-                        $sth->bindValue($kk, $vv);
+                        if (is_int($vv)) {
+                            $param = \PDO::PARAM_INT;
+                        } elseif (is_bool($vv)) {
+                            $param = \PDO::PARAM_BOOL;
+                        } elseif (is_null($vv)) {
+                            $param = \PDO::PARAM_NULL;
+                        } elseif (is_string($vv)) {
+                            $param = \PDO::PARAM_STR;
+                        } else {
+                            $param = FALSE;
+                        }
+                        if ($param !== FALSE) {
+                            $sth->bindValue($kk, $vv, $param);
+                        }
                     }
                     $result[] = $sth->execute();
                 }
             } else {
                 foreach ($this->_bind as $k => $v) {
-                    $sth->bindValue($k, $v);
+                    if (is_int($v)) {
+                        $param = \PDO::PARAM_INT;
+                    } elseif (is_bool($v)) {
+                        $param = \PDO::PARAM_BOOL;
+                    } elseif (is_null($v)) {
+                        $param = \PDO::PARAM_NULL;
+                    } elseif (is_string($v)) {
+                        $param = \PDO::PARAM_STR;
+                    } else {
+                        $param = FALSE;
+                    }
+                    if ($param !== FALSE) {
+                        $sth->bindValue($k, $v, $param);
+                    }
                 }
                 $result = $sth->execute();
             }
