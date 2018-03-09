@@ -51,7 +51,7 @@ class view {
         // step5.输出模版
         ob_start();
         include $this->_tpl_runtime;
-        if (!is_null(config('view_bed')) || !isset($options['disable_bed']) || !$options['disable_bed']) {
+        if (!is_null(config('view_bed')) && (!isset($options['disable_bed']) || !$options['disable_bed'])) {
             $bed_content = ob_get_clean();
             // $code = ''; //未include的php拼接源码
             $this->compile(config('view_bed'));
