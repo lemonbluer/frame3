@@ -41,9 +41,11 @@ class frame3 {
         if (config('app_online')) {
             switch ($exp_code) {
             case 33301:
+                http_response_code(404);
                 R('/', '当前页面被外星人拿走了!', 2);
                 break;
             default:
+                http_response_code(404);
                 R('/', '当前页面被外星人拿走了!', 2);
                 break;
             }
