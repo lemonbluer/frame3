@@ -444,6 +444,7 @@ class model {
     public function transaction_beg() {
         if (!isset($this->_transaction_on) || !$this->_transaction_on) {
             $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
+            // $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, 0);
             $this->_db_instance->beginTransaction();
             $this->_transaction_on = TRUE;
         }
@@ -462,6 +463,16 @@ class model {
         return $this;
     }
 
+    // 手动制定表名
+    public function table($table_name = '') {
+        if ($table_name == '') {
+            throw new \Exception("No tablename or column specified in SQL[" . $this->sql() . ']', 33303);
+            return false;
+        }
+        $this->_table_name = $table_name;
+        return $this;
+    }
+
     // 复用当前model，清理查询参数
     public function renew() {
         unset($this->_bind);
@@ -474,6 +485,9 @@ class model {
         unset($this->_values); // insert查询值字段
         unset($this->_multi_execute);
         unset($this->_transaction_on);
+        // if (!is_null($this->_db_instance)) {
+        //     $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, 1);
+        // }
         return $this;
     }
 }
