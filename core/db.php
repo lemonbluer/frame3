@@ -71,6 +71,7 @@ class db {
         $pdo = new \PDO($dsn, $config['user'], $config['password']);
         $pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, FALSE);
         $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, FALSE);
+        $pdo->setAttribute(\PDO::ATTR_TIMEOUT, 5);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         return $pdo;
     }
