@@ -11,7 +11,7 @@ function T($time = 0, $format = 'Y-m-d H:i:s') {
 }
 
 function L($data) {
-    echo $data;
+    @file_put_contents(config('log_file'), T() . "|" . json_encode($data) . "\r\n", FILE_APPEND);
 }
 
 /**

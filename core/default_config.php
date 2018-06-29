@@ -9,4 +9,5 @@ return [
     'static_file_extension' => ['png', 'jpg', 'js', 'css', 'jpeg'], // 静态文件后缀
     'static_file_directory' => ROOT_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'static', // 默认静态文件目录
     'session_cookie_lifetime' => 259200, // 会话cookie过期时间
+    'log_file' => ROOT_PATH . DIRECTORY_SEPARATOR . 'log' . DIRECTORY_SEPARATOR . 'frame3_default.log',
 ];
