@@ -26,8 +26,8 @@ class upload {
 
     private function convert_jpeg($key = 'file', $type = '', $new_file_name = '') {
         // TODO : 批量传图
-        if (is_array($_FILES[$key]['error'])) {return [];}
         if (!isset($_FILES[$key])) {return [];}
+        if (is_array($_FILES[$key]['error'])) {return [];}
         if ($_FILES[$key]['error'] == UPLOAD_ERR_OK) {
             $file_type = $_FILES[$key]['type'];
             $tmp_img = $_FILES[$key]['tmp_name'];
@@ -47,6 +47,8 @@ class upload {
             case 'image/wbmp':
                 $im = imagecreatefromwbmp($tmp_img);
                 break;
+            default:
+                return [];
             }
             // @unlink($tmp_img);
             if ($new_file_name == '') {
