@@ -340,7 +340,6 @@ class model {
                 $sql .= sprintf('LIMIT %d ', intval($this->_limit[1]));
             }
             break;
-            break;
         default:
             # code...
             break;
@@ -350,9 +349,14 @@ class model {
 
     // 执行查询
     public function query($sql = '') {
-        if ($sql === '') {$sql = $this->_build_sql();}
-        $this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
         $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
+        if ($sql !== '') {
+            $sth = $this->_db_instance->query($sql);
+            $rows = $sth->fetchAll(\PDO::FETCH_ASSOC);
+            return empty($rows[0]) ? null : $rows;
+        }
+        $sql = $this->_build_sql();
+        $this->_last_sql = ['sql' => $sql, 'bind' => isset($this->_bind) ? $this->_bind : null];
         $sth = $this->_db_instance->prepare($sql);
         if (!$sth) {
             throw new \Exception("SQL prepare failure. \nsql: [" . $sql . "],\nbind :" . var_export($this->_bind, TRUE), 33303);
@@ -414,8 +418,11 @@ class model {
         if ($this->_query_type == 'INSERT') {
             return $result ? $this->_db_instance->lastInsertId() : 0;
         }
-        return $result ? $sth->fetchAll(\PDO::FETCH_ASSOC) : null;
-
+        if ($result !== true) {
+            return FALSE;
+        }
+        $rows = $sth->fetchAll(\PDO::FETCH_ASSOC);
+        return empty($rows[0]) ? null : $rows;
     }
 
     // 执行语句
