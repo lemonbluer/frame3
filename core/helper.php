@@ -5,13 +5,27 @@
  */
 function T($time = 0, $format = 'Y-m-d H:i:s') {
     if ($time == 0) {
-        $time = time();
+        return date($format);
     }
     return date($format, $time);
 }
 
-function L($data) {
-    @file_put_contents(config('log_file'), T() . "|" . json_encode($data) . "\r\n", FILE_APPEND);
+function L($data, $level = 'info') {
+    switch ($level) {
+    case 'debug':
+        $log = '[debug]' . json_encode($data);
+        if (config('debug_mode')) {
+            echo $log . "<br>\r\n";
+            return;
+        }
+        break;
+    case 'info':
+    default:
+        $log = json_encode($data);
+        break;
+    }
+    @file_put_contents(config('log_file'), T() . "|" . $log . "\r\n", FILE_APPEND);
+
 }
 
 /**
