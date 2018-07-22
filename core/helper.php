@@ -171,8 +171,9 @@ function tuning($log, $resp_type = '') {
     // file_put_contents(ROOT_PATH . DIRECTORY_SEPARATOR . 'a.log', var_export($log) . "\n", FILE_APPEND);
     switch ($resp_type) {
     case 'JSON':
+        $log['logged_time'] = T();
         header('Content-type: application/json');
-        return json_encode(['time' => T(), 'log' => $log]);
+        return json_encode($log);
         break;
     case 'HTML':
         $trace_html = '';
