@@ -19,6 +19,7 @@ class model {
     // sql拼接
     protected $_query_type;
     protected $_distinct;
+    protected $_pre;
     protected $_set;
     protected $_where; // where查询条件
     protected $_limit; // 设置结果集偏移量和数量
@@ -48,6 +49,12 @@ class model {
     // distinct 开关
     public function distinct() {
         $this->_distinct = TRUE;
+        return $this;
+    }
+
+    // distinct top ...
+    public function pre($pre = '') {
+        $this->_pre[] = $pre;
         return $this;
     }
 
@@ -276,9 +283,9 @@ class model {
         case 'SELECT':
             // step.1 操作符
             $sql = 'SELECT ';
-            // step.2 distinct
-            if (isset($this->_distinct)) {
-                $sql .= 'DISTINCT ';
+            // step.2 pre
+            if (isset($this->_pre)) {
+                $sql .= implode(' ', $this->_pre) . ' ';
             }
             // step.3 列
             $sql .= ($this->_col ?? '*') . ' ';
@@ -485,6 +492,8 @@ class model {
         unset($this->_bind);
         if (isset($this->_multi_execute) && $this->_multi_execute) {return $this;}
         unset($this->_query_type);
+        unset($this->_distinct);
+        unset($this->_pre);
         unset($this->_set);
         unset($this->_where); // where查询条件
         unset($this->_limit); // 设置结果集偏移量和数量

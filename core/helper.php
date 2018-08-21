@@ -11,17 +11,16 @@ function T($time = 0, $format = 'Y-m-d H:i:s') {
 }
 
 function L($data, $level = 'info') {
+    $log = json_encode($data);
     switch ($level) {
     case 'debug':
-        $log = '[debug]' . json_encode($data);
         if (config('debug_mode')) {
-            echo $log . "<br>\r\n";
+            echo $log . "\r\n";
             return;
         }
         break;
     case 'info':
     default:
-        $log = json_encode($data);
         break;
     }
     @file_put_contents(config('log_file'), T() . "|" . $log . "\r\n", FILE_APPEND);
@@ -34,8 +33,8 @@ function L($data, $level = 'info') {
  * @param [type] $default_value [description]
  * @param array  $opitions        扩展选项  type:数据类型
  */
-function I($name, $default_value = NULL, $opitions = NULL) {
-    if ($name === '') {
+function I($name = NULL, $default_value = NULL, $opitions = NULL) {
+    if ($name === NULL) {
         $par = [];
         return array_merge($par, $_GET, $_POST);
     }
@@ -204,4 +203,15 @@ function assign($k, $v) {
 function V($tpl = '', $options = []) {
     echo \frame3\core\view::instance()->fetch($tpl, $options);
     return;
+}
+
+/**
+ * @name 安全取值
+ * @param  array  $array         [description]
+ * @param  string $key           [description]
+ * @param  int    $defaule_value [description]
+ * @return [type]                [description]
+ */
+function safe($array = [], $key = '', $defaule_value = 0) {
+    return isset($array[$key]) ? $array[$key] : $defaule_value;
 }

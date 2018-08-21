@@ -52,8 +52,10 @@ class view {
         ob_start();
         include $this->_tpl_runtime;
         if (!is_null(config('view_bed')) && (!isset($options['disable_bed']) || !$options['disable_bed'])) {
-            $bed_content = ob_get_clean();
+            $bed_content = ob_get_contents();
+            ob_clean();
             // $code = ''; //未include的php拼接源码
+            // ob_start();
             $this->compile(config('view_bed'));
             include RUNTIME_PATH . DIRECTORY_SEPARATOR . config('view_bed') . '.html';
             $bed = ob_get_clean();

@@ -54,7 +54,7 @@ class frame3 {
             if (config('debug_mode')) {
                 $msg = '捕获异常:' . $e->getMessage() . "\n<br/>File: " . $e->getFile() . '(' . $e->getLine() . ")";
                 echo tuning(['code' => -1, 'msg' => $msg, 'trace' => $e->getTrace()]);
-                L(['type' => 'EXCEPTION', 'msg' => $msg, 'server' => $_SERVER]);
+                L(['type' => 'EXCEPTION', 'msg' => $msg, 'trace' => $e->getTrace(), 'server' => $_SERVER]);
             }
         }
     }
@@ -74,7 +74,7 @@ class frame3 {
         // vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
         $msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}:{$errline} ";
         echo tuning(['code' => -1, 'msg' => $msg, 'errcontext' => $errcontext, 'trace' => debug_backtrace()]);
-        L(['type' => 'FATAL', 'msg' => $msg, 'errcontext' => $errcontext, 'server' => $_SERVER]);
+        L(['type' => 'FATAL', 'msg' => $msg, 'errcontext' => $errcontext, 'trace' => debug_backtrace(), 'server' => $_SERVER]);
         die();
     }
 
