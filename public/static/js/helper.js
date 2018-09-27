@@ -20,10 +20,8 @@ function ajax_upload(o, key) {
         processData: false, // 注意：不要 process data
         contentType: false, // 注意：不设置 contentType
         data: form_data
-    }).success(function(resp) {
+    }).done(function(resp) {
         r = (resp.code == 0) ? resp.data : false;
-    }).fail(function() {
-        r = false;
     });
     $(o).val('');
     return r;
