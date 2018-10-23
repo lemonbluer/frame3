@@ -47,6 +47,9 @@ function I($name = NULL, $default_value = NULL, $opitions = NULL) {
         case 'string':
             $value = '' . $value;
             break;
+        case 'json':
+            $value = json_decode($value, TRUE);
+            break;
         case 'int':
             $value = intval($value);
             break;
