@@ -1,7 +1,7 @@
 var frame3 = {}
 
 // url拆分
-frame3.URL = location.href.split('?')[0].split('/');
+frame3.URL = location.href.split('?')[0].split('#')[0].split('/');
 frame3.APP_URL = (frame3.URL.length >= 3) ? '/' + frame3.URL[3] : 'f';
 frame3.CONTROLLER_URL = (frame3.URL.length >= 4) ? frame3.APP_URL + '/' + frame3.URL[4] : 'index';
 frame3.FUNCTION_URL = (frame3.URL.length >= 5) ? frame3.CONTROLLER_URL + '/' + frame3.URL[5] : 'index';
