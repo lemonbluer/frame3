@@ -52,6 +52,7 @@ class frame3 {
             return;
         } else {
             if (config('debug_mode')) {
+                http_response_code(418);
                 $msg = '捕获异常:' . $e->getMessage() . "\n<br/>File: " . $e->getFile() . '(' . $e->getLine() . ")";
                 echo tuning(['code' => -1, 'msg' => $msg, 'trace' => $e->getTrace()]);
                 L(['type' => 'EXCEPTION', 'msg' => $msg, 'trace' => $e->getTrace(), 'server' => $_SERVER]);
@@ -70,6 +71,7 @@ class frame3 {
      * @return [type]             [description]
      */
     public static function error_handler(int $errno, string $errstr, string $errfile, int $errline, array $errcontext) {
+        http_response_code(418);
         // $e = error_get_last();
         // vd(T() . __METHOD__ . '捕获出错', ['errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'errcontext' => $errcontext]);
         $msg = "Fatal Error ({$errno}): {$errstr}<br>File:{$errfile}:{$errline} ";
@@ -85,6 +87,7 @@ class frame3 {
     public static function shutdown() {
         $e = error_get_last();
         if (!is_null($e)) {
+            http_response_code(418);
             vd(T() . '捕获异常:' . $e->getMessage(), $e->getFile() . '(' . $e->getLine() . ')', $e);
         }
         // vd(T() . ' shutting down');

@@ -96,8 +96,7 @@ function M($name = '') {
 function R($url = '', $msg = '', $delay = 0) {
     // TODO : 死循环页面跳出
     if ($delay == 0 && $url != '') {
-        header('Location:' . $url);
-        return;
+        return header('Location:' . $url);
     }
     $resp = '<html><head></head><body><div style="text-align:center;"><h1>__msg__</h1>__jump__</div></body></html>';
     $jump = ($url == '') ? '' : '<h4>__delay__秒后自动跳转到&nbsp;&nbsp;<a href="__url__">__url__</a></h4><script type="text/javascript">setInterval(function(){location.href=\'__url__\';},(__delay__*1000));</script>';
@@ -144,21 +143,34 @@ function session($key = NULL, $value = '', $options = []) {
  */
 function vd() {
     $args = func_get_args();
+    echo vdr($args);
+    exit;
+}
+
+/**
+ * var_dump变量(返回字符串)
+ * @param  [type] $var [description]
+ * @return [type]      [description]
+ */
+function vdr($args = NULL) {
+    if (is_null($args)) {$args = func_get_args();}
     ob_start();
+    echo "\n-- trace --------------------------------\n";
+    $trace = debug_backtrace()[1];
+    echo $trace['file'] . '(' . $trace['line'] . ")\n";
+    echo "\n-- detail -------------------------------\n";
     if (is_array($args)) {
         foreach ($args as $k => $v) {
             var_dump($v);
-            echo "\n--------------------------------------------\n";
+            echo "\n-------------\n";
         }
     } else {
         var_dump($args);
     }
     $log = ob_get_clean();
-    // highlight_string("<?php\n" . implode("--------------------------------------------\n", $log));
-    // $trace = debug_backtrace()[2];
-    // echo $trace['file'] . '(' . $trace['line'] . ")\n";
-    echo "<pre>\n" . $log . "\n";
-    exit;
+    $log = highlight_string("<?php\n" . $log, TRUE);
+    $log = "<pre>" . $log . "\n";
+    return $log;
 }
 
 /**
