@@ -12,7 +12,7 @@ class model {
     protected $_db_name; //数据库名
     protected $_table_name; // 表名
 
-    protected $_transaction_on;
+    public static $transaction_on = FALSE;
 
     protected $_last_sql; //上次执行的sql
 
@@ -41,8 +41,12 @@ class model {
      * @return [type] [description]
      */
     protected function get_db_ins() {
-        // update\delete\insert 均走主库
-        $is_master = (!isset($this->_query_type) || $this->_query_type != 'SELECT');
+        // update\delete\insert 事务 均走主库
+        if (self::$transaction_on) {
+            $is_master = TRUE;
+        } else {
+            $is_master = (!isset($this->_query_type) || $this->_query_type != 'SELECT');
+        }
         return db::get_instance($this->_db_cfg_name, $is_master);
     }
 
@@ -134,7 +138,7 @@ class model {
     }
 
     // 查询符合查询条件的条数
-    public function count() {
+    public function ns() {
         $this->_query_type = 'SELECT';
         $this->_col = 'count(*) AS count ';
         $this->_limit = [0, 1];
@@ -356,7 +360,7 @@ class model {
 
     // 执行查询
     public function query($sql = '') {
-        $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
+        $this->_db_instance = $this->get_db_ins();
         if ($sql !== '') {
             $sth = $this->_db_instance->query($sql);
             $rows = $sth->fetchAll(\PDO::FETCH_ASSOC);
@@ -436,7 +440,7 @@ class model {
     public function exec($sql = '') {
         if ($sql === '') {$sql = $this->_build_sql();}
         $this->_last_sql = ['sql' => $sql];
-        $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
+        $this->_db_instance = $this->get_db_ins();
         $affected_row_count = $this->_db_instance->exec($sql);
         if (FALSE !== $affected_row_count) {
             $err = $this->_db_instance->errorInfo();
@@ -456,24 +460,29 @@ class model {
 
     // 开始事务
     public function transaction_beg() {
-        if (!isset($this->_transaction_on) || !$this->_transaction_on) {
-            $this->_db_instance = $this->_db_instance ?? $this->get_db_ins();
-            // $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, 0);
-            $this->_db_instance->beginTransaction();
-            $this->_transaction_on = TRUE;
+        if (!self::$transaction_on) {
+            $this->_db_instance = $this->get_db_ins();
+            $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, FALSE);
+            if (!$this->_db_instance->beginTransaction()) {
+                throw new \Exception("start new transaction failed", 33303);
+                return;
+            }
+            self::$transaction_on = TRUE;
         }
         return $this;
     }
     // 提交事务
     public function commit() {
         $this->_db_instance->commit();
-        $this->_transaction_on = FALSE;
+        $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, TRUE);
+        self::$transaction_on = FALSE;
         return $this;
     }
     // 回滚事务
     public function roll_back() {
         $this->_db_instance->rollBack();
-        $this->_transaction_on = FALSE;
+        $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, TRUE);
+        self::$transaction_on = FALSE;
         return $this;
     }
 
@@ -500,10 +509,7 @@ class model {
         unset($this->_col); //查询的字段
         unset($this->_values); // insert查询值字段
         unset($this->_multi_execute);
-        unset($this->_transaction_on);
-        // if (!is_null($this->_db_instance)) {
-        //     $this->_db_instance->setAttribute(\PDO::ATTR_AUTOCOMMIT, 1);
-        // }
+        // unset($this->_transaction_on);
         return $this;
     }
 }
