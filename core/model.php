@@ -138,7 +138,7 @@ class model {
     }
 
     // 查询符合查询条件的条数
-    public function ns() {
+    public function count() {
         $this->_query_type = 'SELECT';
         $this->_col = 'count(*) AS count ';
         $this->_limit = [0, 1];
