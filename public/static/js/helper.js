@@ -82,23 +82,28 @@ frame3.dialog = function(text_cfg, fun_ok_callback, fun_cancel_callback) {
     $('#frame3-dialog .modal-footer button').unbind('click').on('click', function(e, o) {
         if ($(e.target).hasClass('btn-ok') && fun_ok_callback && {}.toString.call(fun_ok_callback) === '[object Function]') {
             fun_ok_callback();
-            $('#frame3-dialog').modal('hide');
         }
         if ($(e.target).hasClass('btn-cancel') && fun_cancel_callback && {}.toString.call(fun_cancel_callback) === '[object Function]') {
             fun_cancel_callback();
         }
+        $('#frame3-dialog').modal('hide');
     });
-    if (text_cfg && text_cfg.title) {
-        $('#frame3-dialog-label').html(text_cfg.title);
-    }
-    if (text_cfg && text_cfg.body) {
-        $('#frame3-dialog .modal-body').html(text_cfg.body);
-    }
-    if (text_cfg && text_cfg.btn_cancel_text) {
-        $('#frame3-dialog .modal-footer button.btn-cancel').html(text_cfg.btn_cancel_text);
-    }
-    if (text_cfg && text_cfg.btn_ok_text) {
-        $('#frame3-dialog .modal-footer button.btn-ok').html(text_cfg.btn_ok_text);
+    if (text_cfg) {
+        if (text_cfg.title) {
+            $('#frame3-dialog-label').html(text_cfg.title);
+        }
+        if (text_cfg.body) {
+            $('#frame3-dialog .modal-body').html(text_cfg.body);
+        }
+        if (text_cfg.btn_cancel_text) {
+            $('#frame3-dialog .modal-footer button.btn-cancel').html(text_cfg.btn_cancel_text);
+        }
+        if (text_cfg.btn_cancel_hide == true) {
+            $('#frame3-dialog .modal-footer button.btn-cancel').hide();
+        }
+        if (text_cfg.btn_ok_text) {
+            $('#frame3-dialog .modal-footer button.btn-ok').html(text_cfg.btn_ok_text);
+        }
     }
 }
 frame3.reset_dialog = function() {
