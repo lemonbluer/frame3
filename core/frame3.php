@@ -88,7 +88,7 @@ class frame3 {
         $e = error_get_last();
         if (!is_null($e)) {
             http_response_code(418);
-            vd(T() . '捕获异常:' . $e->getMessage(), $e->getFile() . '(' . $e->getLine() . ')', $e);
+            vd(T() . ' exit_:' . $e['message'] . "\n" . $e['file'] . '(' . $e['line'] . ')');
         }
         // vd(T() . ' shutting down');
     }

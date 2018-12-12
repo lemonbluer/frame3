@@ -90,6 +90,9 @@ class model {
      * @param  string $op       连接该组where条件的 AND或OR
      * @param  string $inner_op 括号内运算符 连接组内各计算的AND或OR
      * @return $this
+     * @example where(['a'=>1,'b'=>2],'OR')       -->  ... OR (`a`=1 AND `b`=2) ...
+     * @example where(['a'=>1,'b'=>2],'AND','OR') -->  ... AND (`a`=1 OR `b`=2) ...
+     * @example where(['a'=>1,'b'=>['>=', 2])     -->  ... AND (`a`=1 AND `b`>=2) ...
      */
     public function where($where, string $op = 'AND', string $inner_op = 'AND') {
         $this->_set_where($where, $op, $inner_op);
@@ -103,6 +106,7 @@ class model {
      * 构建where查询条件
      * @return [type] [description]
      *  $op ( $where[0]->key $where[0]->val[0] $where[0]->val $inner_op )
+     *
      */
     protected function _build_where() {
         if (!isset($this->_where)) {return null;}
@@ -138,9 +142,9 @@ class model {
     }
 
     // 查询符合查询条件的条数
-    public function count() {
+    public function count($column_name = '*') {
         $this->_query_type = 'SELECT';
-        $this->_col = 'count(*) AS count ';
+        $this->_col = 'count(' . $column_name . ') AS count ';
         $this->_limit = [0, 1];
         return intval($this->query()[0]['count']);
     }
